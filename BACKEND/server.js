@@ -3,8 +3,8 @@ import cors from 'cors'
 import 'dotenv/config'
 import connectDB from './config/mongodb.js'
 import connectCloudinary from './config/cloudinary.js'
-import adminRoute from './routes/adminRoute.js';
-
+//import adminRoute from './routes/adminRoute.js';
+import serviceRoute from './routes/serviceRoute.js';
 const app = express()
 
 const port = process.env.PORT || 4200
@@ -14,7 +14,8 @@ app.use(cors())
 connectDB()
 connectCloudinary()
 
-app.use('/api/admin', adminRoute)
+//app.use('/api/admin', adminRoute)
+app.use('/api/admin/service', serviceRoute)
 
 app.get('/', (req, res) => {
     res.send("API WORKING")
