@@ -7,7 +7,7 @@ const adminRoute = express.Router()
 adminRoute.post('/add-service', upload.single('displayImage'), addService)
 adminRoute.get('/', displayAllServices)
 adminRoute.get('/:serviceId', displaySingleServices)
-adminRoute.put('/:serviceId', updateService);
+adminRoute.put('/:serviceId', upload.single('displayImage'), updateService);
 adminRoute.delete('/:serviceId', deleteService);
 
 export default adminRoute

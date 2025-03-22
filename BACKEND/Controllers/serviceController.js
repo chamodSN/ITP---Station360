@@ -4,13 +4,23 @@ import serviceModel from '../models/serviceModel.js';
 const addService = async (req, res) => {
     try {
 
-        const { serviceName, displayImage, description, specificationsString, price, available, isBookable, interval } = req.body
+        const { serviceName, category, displayImage, description, specificationsString, price, available, isBookable, interval } = req.body
 
         const imageFile = req.file
 
-        if (!serviceName || !description || !specificationsString || !price || !available || !isBookable || !interval || !imageFile) {
-            return res.json({ success: false, message: "All fields are required" })
+        const isBookableBoolean = JSON.parse(isBookable)
+        const isAvailableBoolean = JSON.parse(available)
+
+        if (isBookableBoolean) {
+            if (!serviceName || !category || !description || !specificationsString || !price || !imageFile || !interval) {
+                return res.json({ success: false, message: "All fields are required" });
+            }
+        } else {
+            if (!serviceName || !category || !description || !specificationsString || !price || !imageFile) {
+                return res.json({ success: false, message: "All fields are required" });
+            }
         }
+
 
         const imageUpload = await cloudinary.uploader.upload(imageFile.path, { resource_type: "image" })
 
@@ -18,30 +28,33 @@ const addService = async (req, res) => {
 
         const seperated = specificationsString.split(",");
 
-        const startTime = 9.00 * 60;
-        const endTime = 17.00 * 60;
-        let timeStapm = startTime;
+        let timeSlots = [];
 
-        const timeSlots = [];
+        if (isBookableBoolean) {
+            const startTime = 9.00 * 60;
+            const endTime = 17.00 * 60;
+            let timeStapm = startTime;
 
-        while (timeStapm < endTime) {
-            let hours = Math.floor(timeStapm / 60);
-            let minutes = timeStapm % 60;
+            while (timeStapm < endTime) {
+                let hours = Math.floor(timeStapm / 60);
+                let minutes = timeStapm % 60;
 
-            let formattedTime = `${hours}.${minutes.toString().padStart(2, '0')}`;
-            timeSlots.push(formattedTime);
+                let formattedTime = `${hours}.${minutes.toString().padStart(2, '0')}`;
+                timeSlots.push(formattedTime);
 
-            timeStapm += Number(interval);
+                timeStapm += Number(interval);
+            }
         }
 
         const serviceData = {
             serviceName,
+            category,
             displayImage: imageUrl,
             description,
             specifications: seperated,
-            price,
-            available,
-            isBookable,
+            price: parseInt(price),
+            available: isAvailableBoolean,
+            isBookable: isBookableBoolean,
             timeSlots: timeSlots,
         }
 
@@ -59,9 +72,9 @@ const addService = async (req, res) => {
 const displayAllServices = async (req, res) => {
     try {
 
-        const allServices = await serviceModel.find().select('displayImage serviceName available');
+        const allServices = await serviceModel.find().select('displayImage serviceName available price category');
 
-        if (!allServices) {
+        if (allServices.length === 0) {
             return res.json({ success: false, message: "No services found" })
         }
 
@@ -78,7 +91,7 @@ const displaySingleServices = async (req, res) => {
 
         let serviceId = req.params.serviceId;
 
-        const service = await serviceModel.findById(serviceId).select('-interval -timeSlots -bookedSlots');
+        const service = await serviceModel.findById(serviceId).select('-bookedSlots');
 
         if (!service) {
             return res.json({ success: false, message: "Selected Service Cannot be Found" })
@@ -94,12 +107,24 @@ const displaySingleServices = async (req, res) => {
 const updateService = async (req, res) => {
     try {
 
+        console.log("Request body:", req.body);
+        console.log("File received:", req.file);
+
         const serviceId = req.params.serviceId;
-        const { serviceName, description, specificationsString, price, available, isBookable, interval } = req.body;
+        const { serviceName, category, description, specificationsString, price, available, isBookable, interval } = req.body;
         const imageFile = req.file;
 
-        if (!serviceName || !description || !specificationsString || !price || !available || !isBookable) {
-            return res.json({ success: false, message: "All fields are required" })
+        const isBookableBoolean = JSON.parse(isBookable)
+        const isAvailableBoolean = JSON.parse(available)
+
+        if (isBookableBoolean) {
+            if (!serviceName || !category || !description || !specificationsString || !price || !available || !isBookable || !interval) {
+                return res.json({ success: false, message: "All fields are required" })
+            }
+        } else {
+            if (!serviceName || !category || !description || !specificationsString || !price || !available || !isBookable) {
+                return res.json({ success: false, message: "All fields are required" })
+            }
         }
 
         let service = await serviceModel.findById(serviceId);
@@ -130,7 +155,7 @@ const updateService = async (req, res) => {
 
         const seperated = specificationsString.split(",");
 
-        await serviceModel.findByIdAndUpdate(serviceId, { serviceName, description, specifications:seperated, price, available, isBookable })
+        await serviceModel.findByIdAndUpdate(serviceId, { serviceName, category, description, specifications: seperated, price, available, isBookable })
 
         let updateMessage = "Service updated successfully.";
 
