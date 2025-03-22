@@ -2,10 +2,10 @@ import mongoose from "mongoose";
 
 const serviceSchema = new mongoose.Schema({
     serviceName: { type: String, required: true, maxlength: 20 },
+    category: { type: String, default: "General Maintenance & Inspection" },
     displayImage: { type: String, required: true },
     description: { type: String, required: true },
     specifications: { type: [String], default: [] },
-    interval: { type: Number, min: 0, default: 0 },
     price: { type: Number, min: 0, default: 0 },
     available: { type: Boolean, required: true },
     isBookable: { type: Boolean, required: true },
