@@ -1,6 +1,6 @@
 import upload from '../middleware/multer.js'
 import express,{Router} from 'express'
-import {addvehicle, getAllVehicles, getVehicle, deleteVehicle, updateVehicle} from '../Controllers/userController.js'
+import {addvehicle, getAllVehicles, getVehicle, deleteVehicle, updateVehicle} from '../controllers/userController.js'
 
 
 const userRoute = express.Router()
