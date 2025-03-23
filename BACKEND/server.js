@@ -5,6 +5,8 @@ import connectDB from './config/mongodb.js'
 import connectCloudinary from './config/cloudinary.js'
 //import adminRoute from './routes/adminRoute.js';
 import serviceRoute from './routes/serviceRoute.js';
+import bookingRoute from './routes/bookingRoute.js';
+
 const app = express()
 
 const port = process.env.PORT || 4200
@@ -16,6 +18,7 @@ connectCloudinary()
 
 //app.use('/api/admin', adminRoute)
 app.use('/api/admin/service', serviceRoute)
+app.use('/api', bookingRoute)
 
 app.get('/', (req, res) => {
     res.send("API WORKING")

@@ -2,12 +2,12 @@ import express, { Router } from 'express'
 import upload from '../middleware/multer.js'
 import { addService, displayAllServices, displaySingleServices, updateService, deleteService } from '../Controllers/serviceController.js';
 
-const adminRoute = express.Router()
+const serviceRoute = express.Router()
 
-adminRoute.post('/add-service', upload.single('displayImage'), addService)
-adminRoute.get('/', displayAllServices)
-adminRoute.get('/:serviceId', displaySingleServices)
-adminRoute.put('/:serviceId', upload.single('displayImage'), updateService);
-adminRoute.delete('/:serviceId', deleteService);
+serviceRoute.post('/add-service', upload.single('displayImage'), addService)
+serviceRoute.get('/', displayAllServices)
+serviceRoute.get('/:serviceId', displaySingleServices)
+serviceRoute.put('/:serviceId', upload.single('displayImage'), updateService);
+serviceRoute.delete('/:serviceId', deleteService);
 
-export default adminRoute
+export default serviceRoute
