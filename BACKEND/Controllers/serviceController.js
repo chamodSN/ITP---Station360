@@ -72,7 +72,7 @@ const addService = async (req, res) => {
 const displayAllServices = async (req, res) => {
     try {
 
-        const allServices = await serviceModel.find().select('displayImage serviceName available price category');
+        const allServices = await serviceModel.find().select('-bookedSlots');
 
         if (allServices.length === 0) {
             return res.json({ success: false, message: "No services found" })
