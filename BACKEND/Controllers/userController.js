@@ -4,25 +4,31 @@ import vehicleModel from '../models/vehicleModel.js';
 const addvehicle = async (req, res) => {
     try {
 
-        const { brandName, modelName, vinNumber, fuelType, Image } = req.body
+        const { userId, brandName, modelName, plateNumber, vinNumber, fuelType, Image } = req.body;
+
         const imagefile = req.file
 
-        if (!brandName || !modelName || !vinNumber || !fuelType || !imagefile)
+        console.log(req.body);
+console.log(req.file); 
+
+
+        if (!brandName || !modelName || !plateNumber || !vinNumber || !fuelType || !imagefile)
             return res.json({ sucess: false, message: "All fields are required" })
 
         const imageUpload = await cloudinary.uploader.upload(imagefile.path, { resource_type: "image" })
         const imageUrl = imageUpload.secure_url;
 
         const vehicleData = {
+            userId,
             brandName,
             modelName,
+            plateNumber,
             vinNumber,
             fuelType,
             Image: imageUrl
-
-
-
         }
+
+        console.log(vehicleData)
 
         const newVehicle = new vehicleModel(vehicleData)
 
@@ -82,11 +88,11 @@ const updateVehicle = async (req, res) => {
 
         const vehicleId = req.params.id;
 
-        const { brandName, modelName, vinNumber, fuelType } = req.body
+        const { brandName, modelName, plateNumber, vinNumber, fuelType } = req.body
 
 
 
-        await vehicleModel.findByIdAndUpdate(vehicleId, { brandName, modelName, vinNumber, fuelType });
+        await vehicleModel.findByIdAndUpdate(vehicleId, { brandName, modelName, plateNumber, vinNumber, fuelType });
 
         return res.json({ success: true, message: "Vehicle updated successfully"})
 
