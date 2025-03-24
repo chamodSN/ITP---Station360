@@ -1,10 +1,10 @@
-import pushNotificationModel from '../models/pushNotificationModel.js';
+import pushNotificationModel from '../models/notificationsModel.js';
 
 const addNotification = async (req, res) => {
     try {
         const { Title, Body } = req.body
 
-        if (!Title || !Body || !Date || !Time) {
+        if (!Title || !Body) {
             return res.json({ success: false, message: "All fields are required." });
         }
 
@@ -80,7 +80,7 @@ const updateNotification = async (req, res) => {
             return res.json({ success: false, message: "All fields are required." });
         }
 
-        await pushNotificationModel.findByIdAndUpdate(notificationId, { $set: { Title, Body } })
+        await pushNotificationModel.findByIdAndUpdate(notificationId, { $set: { Title, Body, Date: new Date().toISOString().split('T')[0], Time: new Date().toISOString().split('T')[1] } })
 
         return res.json({ success: true, message: "Notification updated successfully" });
 
