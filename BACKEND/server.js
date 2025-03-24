@@ -6,7 +6,9 @@ import connectCloudinary from './config/cloudinary.js'
 import adminRoute from './routes/adminRoute.js';
 import serviceRoute from './routes/serviceRoute.js';
 import bookingRoute from './routes/bookingRoute.js';
+import sheduleRoute from './routes/sheduleRoute.js';
 import employeeRoute from './routes/employeeRoute.js';
+
 
 const app = express()
 
@@ -20,6 +22,7 @@ connectCloudinary()
 app.use('/api/admin', adminRoute)
 app.use('/api/admin/employee', employeeRoute)
 app.use('/api/admin/service', serviceRoute)
+app.use('/api/admin/shedule', sheduleRoute)
 app.use('/api', bookingRoute)
 
 app.get('/', (req, res) => {
