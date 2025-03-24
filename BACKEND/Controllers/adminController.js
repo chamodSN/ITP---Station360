@@ -91,4 +91,3 @@ const updateExpence = async(req,res) =>{
 
 
 export {addExpence, displayAllExpence,displaySingleExpence,deleteSingleExpence,updateExpence }
-
