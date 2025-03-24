@@ -3,9 +3,10 @@ import cors from 'cors'
 import 'dotenv/config'
 import connectDB from './config/mongodb.js'
 import connectCloudinary from './config/cloudinary.js'
-//import adminRoute from './routes/adminRoute.js';
+import adminRoute from './routes/adminRoute.js';
 import serviceRoute from './routes/serviceRoute.js';
 import bookingRoute from './routes/bookingRoute.js';
+import employeeRoute from './routes/employeeRoute.js';
 
 const app = express()
 
@@ -16,7 +17,8 @@ app.use(cors())
 connectDB()
 connectCloudinary()
 
-//app.use('/api/admin', adminRoute)
+app.use('/api/admin', adminRoute)
+app.use('/api/admin/employee', employeeRoute)
 app.use('/api/admin/service', serviceRoute)
 app.use('/api', bookingRoute)
 
