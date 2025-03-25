@@ -1,4 +1,6 @@
-import expencemodel from '../models/expencemodel.js'
+
+import expencemodel from '../models/expencemodel.js';
+
 
 const addExpence =async(req,res)=>{
     try{
@@ -89,4 +91,3 @@ const updateExpence = async(req,res) =>{
 
 
 export {addExpence, displayAllExpence,displaySingleExpence,deleteSingleExpence,updateExpence }
-
