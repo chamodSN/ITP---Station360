@@ -13,7 +13,6 @@ const AddExpence = () => {
         e.preventDefault();
 
         try{
-            
 
             const formData = {
                 ExpenceName,
@@ -73,8 +72,8 @@ const AddExpence = () => {
     }
 
 
+<<<<<<< Updated upstream
 export default AddExpence;
-
-
-
-
+=======
+export default AddExpence;
+>>>>>>> Stashed changes

@@ -7,12 +7,17 @@ function Expence() {
 
     const{id} = useParams();
     const[Expence,setExpence]= useState(null);
+<<<<<<< Updated upstream
     const [isEdit, setIsEdit] = useState(false);
+
+=======
+>>>>>>> Stashed changes
 
     const fetchExpence = async () => {
 
         try{
             const{data}= await axios.get(`http://localhost:4200/api/admin/expence/${id}`);
+<<<<<<< Updated upstream
 
             if(data.success){
                 setExpence(data.expence);
@@ -54,6 +59,17 @@ function Expence() {
 
         } catch (error) {
             console.error("Error updating expense:", error);
+
+=======
+            if(data.success){
+                setExpence(data.expence);
+                }else{
+                    console.log("Error ", data.error)
+                }
+            
+        }catch(error){
+            console.error("Error", error)
+>>>>>>> Stashed changes
         }
     };
 
@@ -65,6 +81,8 @@ function Expence() {
 
   return Expence && (
     <>
+<<<<<<< Updated upstream
+
     <h1>Expence</h1>
          <div>
          <p>Expense  Name:</p>
@@ -107,6 +125,16 @@ function Expence() {
             <br>
             </br>
             <button onClick={() => deleteExpence()}>Delete</button>
+
+=======
+    <div>Expence</div>
+         <div>
+        <h2>{Expence.ExpenceName}</h2>
+    <p>Expence Type:{Expence.ExpenceType}</p>
+    <p>Reason:{Expence.Reason}</p>
+    <p>Cost:{Expence.Cost}</p>
+    <p>Date:{Expence.Date}</p>
+>>>>>>> Stashed changes
     
  </div>
  
