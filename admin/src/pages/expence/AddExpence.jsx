@@ -72,8 +72,4 @@ const AddExpence = () => {
     }
 
 
-<<<<<<< Updated upstream
 export default AddExpence;
-=======
-export default AddExpence;
->>>>>>> Stashed changes

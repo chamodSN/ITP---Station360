@@ -9,7 +9,10 @@ import  AddExpence from './pages/expence/AddExpence'
 import AllExpences from './pages/expence/AllExpence'
 import Expence from './pages/expence/Expence'
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 function App() {
