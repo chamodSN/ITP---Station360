@@ -9,4 +9,3 @@ adminRoute.get('/expence/:id', displaySingleExpence)
 adminRoute.delete('/expence/:id', deleteSingleExpence)
 adminRoute.put('/expence/:id', updateExpence)
 
-export default adminRoute 
