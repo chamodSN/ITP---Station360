@@ -10,12 +10,11 @@ import Service from '../src/pages/services/Service'
 import AddSchedule from '../src/pages/shedule/AddSchedule'
 import AllShedules from '../src/pages/shedule/AllShedule'
 import Shedule from '../src/pages/shedule/Shedule'
-import AddExpence from './pages/AddExpence'
 import AddInventory from './pages/AddInventory'
 import AddNotification from './pages/notifications/AddNotification'
 import AllNotification from './pages/notifications/AllNotifications'
 import Notification from './pages/notifications/Notification'
-
+import AddExpence from './pages/expence/AddExpence'
 
 function App() {
 
