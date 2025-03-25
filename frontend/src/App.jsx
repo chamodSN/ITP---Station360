@@ -3,11 +3,15 @@ import AddVehicle from './pages/vehicle/AddVehicle'
 import AllVehicles from './pages/vehicle/AllVehicles'
 import Vehicle from './pages/vehicle/Vehicle' 
 import Service from './pages/Service'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 function App() {
 
   return (
     <div>
+      <ToastContainer />
       <Routes>
         <Route path='/' element={<></>} />
         <Route path="/service/:id" element={<Service />} />

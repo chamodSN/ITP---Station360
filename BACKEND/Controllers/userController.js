@@ -87,15 +87,28 @@ const updateVehicle = async (req, res) => {
     try {
 
         const vehicleId = req.params.id;
+        const { brandName, modelName, plateNumber, vinNumber, fuelType } = req.body;
 
-        const { brandName, modelName, plateNumber, vinNumber, fuelType } = req.body
+        console.log('req.body', req.body)
+        console.log('req.file', req.file)
 
+        const imageFile = req.file;
 
+        if(imageFile){
+           const imageUpload =  await cloudinary.uploader.upload(imageFile.path, { resource_type: "image" });
+
+              const imageUrl = imageUpload.secure_url;
+
+              await vehicleModel.findByIdAndUpdate(vehicleId, { Image : imageUrl });
+
+        return res.json({ success: true, message: "Vehicle Image updated successfully"})
+        }
 
         await vehicleModel.findByIdAndUpdate(vehicleId, { brandName, modelName, plateNumber, vinNumber, fuelType });
 
-        return res.json({ success: true, message: "Vehicle updated successfully"})
 
+        
+  
     } catch (error) {
         return res.json({ success: false, message: error.message })
     }
