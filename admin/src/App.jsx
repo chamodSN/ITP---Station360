@@ -6,8 +6,13 @@ import Service from '../src/pages/services/Service'
 import AddSchedule from '../src/pages/shedule/AddSchedule'
 import AllShedules from '../src/pages/shedule/AllShedule'
 import Shedule from '../src/pages/shedule/Shedule'
-import AddExpence from './pages/AddExpence'
-import AddInventory from './pages/AddInventory'
+import AddExpence from '../src/pages/AddExpence'
+import AddInventory from '../src/pages/AddInventory'
+import AdminAttendance from '../src/pages/attendence/AdminAttendence'
+import LeaveRequests from '../src/pages/attendence/LeaveRequests'
+
+
+
 function App() {
 
   return (
@@ -22,6 +27,10 @@ function App() {
         <Route path='/displayShedule/:id' element={<Shedule />}/>
         <Route path='/add-expence' element={<AddExpence />} />
         <Route path='/add-inventory' element={<AddInventory />} />
+        <Route path="/admin-attendance" element={<AdminAttendance />} />
+        <Route path="/leave-requests" element={<LeaveRequests />} />
+
+        
       </Routes>
     </div>
   )
