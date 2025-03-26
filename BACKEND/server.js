@@ -10,7 +10,7 @@ import bookingRoute from './routes/bookingRoute.js';
 import sheduleRoute from './routes/sheduleRoute.js';
 import employeeRoute from './routes/employeeRoute.js';
 import notificationsRoute from './routes/notificationRoute.js';
-
+import inventoryRoute from './routes/inventoryRoute.js';
 
 
 const app = express()
@@ -29,7 +29,7 @@ app.use('/api/admin/notification', notificationsRoute)
 app.use('/api/admin/service', serviceRoute)
 app.use('/api/admin/shedule', sheduleRoute)
 app.use('/api', bookingRoute)
-
+app.use('/api/admin/inventory', inventoryRoute)
 
 app.get('/', (req, res) => {
     res.send("API WORKING")
