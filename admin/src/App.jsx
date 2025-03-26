@@ -18,6 +18,7 @@ import AllNotification from './pages/notifications/AllNotifications'
 import Notification from './pages/notifications/Notification'
 import LowStocks from './pages/inventories/lowStock'
 
+
 function App() {
 
   return (
