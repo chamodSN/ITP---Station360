@@ -5,6 +5,7 @@ import Vehicle from './pages/vehicle/Vehicle'
 import Service from './pages/Service'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ContactUs from './pages/ContactUs'
 
 
 function App() {
@@ -18,6 +19,8 @@ function App() {
         <Route path="/add-vehicle" element={<AddVehicle />} />
         <Route path="/all-vehicles" element={<AllVehicles />} />
         <Route path="/vehicle/:id" element={<Vehicle/>}/>
+        <Route path="/contactus" element={<ContactUs />} />
+
         
       </Routes>
     </div>

@@ -2,7 +2,6 @@ import mongoose from "mongoose"
 
 const expenceSchema = new mongoose.Schema({
 
-    ExpenceName:{type:String,required:true},
     ExpenceType:{type:String,required:true},
     Reason:{type:String,required:true},
     Cost:{type:String,required:true},
