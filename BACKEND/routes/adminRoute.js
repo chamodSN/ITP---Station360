@@ -7,6 +7,8 @@ adminRoute.post('/add-expence',  addExpence)
 adminRoute.get('/all-expence', displayAllExpence)
 adminRoute.get('/expence/:id', displaySingleExpence)
 adminRoute.delete('/expence/:id', deleteSingleExpence)
-adminRoute.post('/expence/:id', updateExpence)
+adminRoute.put('/expence/:id', updateExpence)
+
+export default adminRoute
 
 export default adminRoute
