@@ -11,3 +11,4 @@ adminRoute.put('/expence/:id', updateExpence)
 
 export default adminRoute
 
+export default adminRoute

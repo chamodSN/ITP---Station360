@@ -97,13 +97,13 @@ const AllShedules = () => {
                     onChange={handleSearchChange}
                     className="border p-2 rounded w-full md:w-1/4 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300">Search</button>
+                <button type="submit" className="bg-primary text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300">Search</button>
             </form>
 
             {/* Schedule Table */}
             <div className="overflow-x-auto bg-white p-4 rounded-lg shadow-md border border-gray-200">
                 <table className="min-w-full border-collapse border border-gray-300 text-gray-700">
-                    <thead className="bg-blue-600 text-white">
+                    <thead className="bg-primary text-white">
                         <tr>
                             <th className="border border-gray-300 py-3 px-4 text-left">Employee Name</th>
                             <th className="border border-gray-300 py-3 px-4 text-left">Date</th>
