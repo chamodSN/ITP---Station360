@@ -14,3 +14,4 @@ userRoute.post('/register',registerUser)
 userRoute.post('/login',loginUser)
 
 export default userRoute
+
