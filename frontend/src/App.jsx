@@ -3,8 +3,11 @@ import AddVehicle from './pages/vehicle/AddVehicle'
 import AllVehicles from './pages/vehicle/AllVehicles'
 import Vehicle from './pages/vehicle/Vehicle' 
 import Service from './pages/Service'
+import Login from './pages/Login'
+
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 
 
 function App() {
@@ -15,10 +18,14 @@ function App() {
       <Routes>
         <Route path='/' element={<></>} />
         <Route path="/service/:id" element={<Service />} />
+
+        <Route path="/login" element={<Login />} />
+
         <Route path="/add-vehicle" element={<AddVehicle />} />
         <Route path="/all-vehicles" element={<AllVehicles />} />
         <Route path="/vehicle/:id" element={<Vehicle/>}/>
         
+
       </Routes>
     </div>
   )
