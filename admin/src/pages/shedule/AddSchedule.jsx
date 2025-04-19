@@ -113,7 +113,7 @@ const AddSchedule = () => {
         
                 <button 
                     type="submit" 
-                    className="w-full p-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 transition"
+                    className="w-full p-2 bg-primary text-white font-semibold rounded hover:bg-blue-600 transition"
                 >
                     Submit
                 </button>
