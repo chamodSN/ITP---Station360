@@ -10,6 +10,9 @@ import serviceRoute from './routes/serviceRoute.js';
 import bookingRoute from './routes/bookingRoute.js';
 import sheduleRoute from './routes/sheduleRoute.js';
 import employeeRoute from './routes/employeeRoute.js';
+
+import attendenceRouter from './routes/attendenceRoute.js'
+import leaveRoute from './routes/leaveRoute.js'
 import notificationsRoute from './routes/notificationRoute.js';
 import inventoryRoute from './routes/inventoryRoute.js';
 
@@ -27,9 +30,11 @@ app.use('/api/admin', adminRoute)
 app.use('/api/admin', adminRoute)
 app.use('/api/user', userRoute)
 app.use('/api/admin/employee', employeeRoute)
+app.use('/api/admin/attendence', attendenceRouter)
 app.use('/api/admin/notification', notificationsRoute)
 app.use('/api/admin/service', serviceRoute)
 app.use('/api/admin/shedule', sheduleRoute)
+app.use('/api/emp/leave', leaveRoute)
 app.use('/api', bookingRoute)
 app.use('/api/admin/inventory', inventoryRoute)
 
