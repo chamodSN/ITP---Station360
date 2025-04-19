@@ -10,14 +10,18 @@ import AddExpence from './pages/AddExpence'
 import AddInventory from './pages/AddInventory'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Navbar from './components/NavBar'
+import Footer from './components/Footer'
+import AdminDashBoard from './pages/AdminDashBoard'
 
 function App() {
 
   return (
     <div>
+      <Navbar />
       <ToastContainer />
       <Routes>
-        <Route path='/' element={<></>} />
+        <Route path='/' element={<AdminDashBoard />} />
         <Route path="/service/add-service" element={<AddService />} />
         <Route path="/service/all-services" element={<AllServices />} />
         <Route path="/service/:id" element={<Service />} />
@@ -27,6 +31,7 @@ function App() {
         <Route path='/add-expence' element={<AddExpence />} />
         <Route path='/add-inventory' element={<AddInventory />} />
       </Routes>
+      <Footer />
     </div>
   )
 }

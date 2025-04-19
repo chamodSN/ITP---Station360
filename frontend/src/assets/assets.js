@@ -6,6 +6,9 @@ import logo from "./images/logo.png";
 import profilePic from "./images/profilePic.jpg";
 import dropDownIcon from "./images/dropdown_icon.svg";
 import menuIcon from "./images/menu_icon.svg";
+import image1 from "./images/image1.jpg";
+import image2 from "./images/image2.jpg";
+import image3 from "./images/image3.jpg";
 
 const services = [
     { id: "oil-change", title: "Oil Change", img: oilChange, description: "Keep your engine running smoothly with regular oil changes." },
@@ -19,7 +22,10 @@ export const assets = {
     logo,
     profilePic,
     menuIcon,
-    dropDownIcon
+    dropDownIcon,
+    image1,
+    image2,
+    image3
 }
 
 export default assets;

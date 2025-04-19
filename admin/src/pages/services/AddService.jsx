@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useNavigate } from "react-router-dom";
 
 const AddService = () => {
+
+    const navigate = useNavigate();
+
+
     const [serviceName, setServiceName] = useState('');
     const [category, setCategory] = useState('General Maintenance & Inspection');
     const [displayImage, setDisplayImage] = useState('');
@@ -45,6 +50,19 @@ const AddService = () => {
             if (data.success) {
                 console.log("Service added successfully");
                 toast.success("Service added successfully");
+
+                setServiceName('');
+                setCategory('General Maintenance & Inspection');
+                setDisplayImage('');
+                setDescription('');
+                setSpecifications('');
+                setInterval(0);
+                setPrice(0);
+                setAvailable(false);
+                setIsBookable(false);
+
+                navigate("/service/all-services");
+
             } else {
                 console.error("Failed to add service: ", data.message);
                 toast.error(error.message);

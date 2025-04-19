@@ -6,7 +6,7 @@ const displayTimeslots = async (req, res) => {
         const date = req.params.date;
         const serviceId = req.params.serviceId;
 
-        const result = await serviceModel.find({ 'bookedSlots.date': date });
+        const result = await serviceModel.find({ _id: serviceId, 'bookedSlots.date': date });
         const service = await serviceModel.findById(serviceId);
 
         // get all possible timeslots
@@ -14,14 +14,13 @@ const displayTimeslots = async (req, res) => {
 
         // Extract booked time slots from result
         let bookedSlots = [];
-        result.forEach(service => {
-            service.bookedSlots.forEach(slot => {
-                const slotDate = new Date(slot.date).toISOString().split('T')[0];
-                if (slotDate === date) {
-                    bookedSlots.push(slot.timeSlot); // Ensure `timeSlot` is correct
-                }
-            });
-        });
+        for (let i = 0; i < service.bookedSlots.length; i++) {
+            const slot = service.bookedSlots[i];
+            const slotDate = new Date(slot.date).toISOString().split('T')[0];
+            if (slotDate === date) {
+                bookedSlots.push(slot.timeSlot);  // Push the booked timeSlot to the array
+            }
+        }
 
         const availableSlots = allTimeSlots.filter(slot => !bookedSlots.includes(slot));
 
@@ -35,7 +34,7 @@ const displayTimeslots = async (req, res) => {
 const bookService = async (req, res) => {
     try {
 
-        //remove this line after user authentication is implemented
+        //i need to remove this line after user authentication is implemented
         const { userId, date, timeSlot, vehicleNumPlate, serviceId } = req.body
 
         //const userId = req.user.id;
@@ -52,6 +51,7 @@ const bookService = async (req, res) => {
 
 
         const existingBooking = await bookingModel.findOne({ serviceId, date, timeSlot });
+        
         if (existingBooking) {
             return res.json({ success: false, message: "Time slot already booked" })
         }

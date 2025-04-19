@@ -1,10 +1,14 @@
 import React from 'react'
-import ServiceCards from '../components/ServiceCards'
+import VehicleServiceFeatures from '../components/VehicleServiceFeatures'
+import VehicleServices from '../components/VehicleServices'
+import VehicleServiceHome from '../components/VehicleServiceHome'
 
 const Home = () => {
   return (
-      <div>
-          <ServiceCards />
+    <div>
+      <VehicleServiceHome />
+      <VehicleServices />
+      <VehicleServiceFeatures />
     </div>
   )
 }

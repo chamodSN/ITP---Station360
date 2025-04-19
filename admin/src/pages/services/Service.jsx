@@ -2,6 +2,8 @@ import { useParams } from 'react-router-dom'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
 import assets from "../../assets/assets";
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const Service = () => {
 
@@ -9,6 +11,8 @@ const Service = () => {
     const [service, setService] = useState(null);
     const [isEdit, setIsEdit] = useState(false);
     const [image, setImage] = useState(null);
+
+    const navigate = useNavigate();
 
     const fetchService = async () => {
         try {
@@ -18,6 +22,7 @@ const Service = () => {
             }
         } catch (error) {
             console.error("Error fetching service details:", error);
+            toast.error("Failed to fetch service details!");
         }
     };
 
@@ -25,8 +30,11 @@ const Service = () => {
         if (window.confirm("Are you sure you want to delete this service?")) {
             try {
                 await axios.delete(`http://localhost:4200/api/admin/service/${id}`);
+                toast.success("Service deleted successfully!");
+                navigate('/service/all-services');
             } catch (error) {
                 console.error("Error deleting service:", error);
+                toast.error("Failed to delete service!");
             }
         }
     };
@@ -54,12 +62,15 @@ const Service = () => {
             if (data.success) {
                 await fetchService();
                 setIsEdit(false);
+                toast.success("Service updated successfully!");
             } else {
                 console.error(data.message);
+                toast.error(data.message);
             }
 
         } catch (error) {
             console.error("Error updating service:", error);
+            toast.error("Failed to update service!");
         }
     };
 
