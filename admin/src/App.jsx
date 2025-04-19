@@ -1,5 +1,7 @@
 import React from 'react'
 import { Routes, Route } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import AllExpences from './pages/expence/AllExpence'
 import AddExpence from './pages/expence/AddExpence'
@@ -23,6 +25,7 @@ function App() {
 
   return (
     <div>
+      <ToastContainer/>
       <Routes>
         <Route path='/' element={<></>} />
         <Route path="/service/add-service" element={<AddService />} />

@@ -4,7 +4,6 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-
   theme: {
     extend: {
       colors: {
@@ -14,9 +13,6 @@ export default {
     gridTemplateColumns: {
       'auto': 'repeat(auto-fill, minmax(200px, 1fr))',
     }
-  
   },
   plugins: [],
-
 }
-
