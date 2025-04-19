@@ -5,14 +5,13 @@ import jwt from 'jsonwebtoken';
 const addExpence =async(req,res)=>{
     try{
 
-        const { ExpenceName,ExpenceType,Reason,Cost}=req.body
+        const { ExpenceType,Reason,Cost}=req.body
 
-        if (!ExpenceName || !ExpenceType || !Reason || !Cost) {
+        if ( !ExpenceType || !Reason || !Cost) {
             return res.json({success: false, message: "All fields are required."});
         }
 
         const expenceData = {
-            ExpenceName,
             ExpenceType,
             Reason,
             Cost,
@@ -73,13 +72,13 @@ const updateExpence = async(req,res) =>{
 
         const expenceId = req.params.id;
 
-        const {ExpenceName,ExpenceType,Reason,Cost}=req.body
+        const {ExpenceType,Reason,Cost}=req.body
 
-        if (!ExpenceName || !ExpenceType || !Reason || !Cost) {
+        if ( !ExpenceType || !Reason || !Cost) {
             return res.json({success: false, message: "All fields are required."});
         }
 
-        await expencemodel.findByIdAndUpdate(expenceId,{$set:{ ExpenceName,ExpenceType,Reason,Cost}})
+        await expencemodel.findByIdAndUpdate(expenceId,{$set:{ ExpenceType,Reason,Cost}})
         
         return res.json({success:true,message:"Expence update successfully."})
 
