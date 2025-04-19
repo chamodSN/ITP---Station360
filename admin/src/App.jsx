@@ -12,11 +12,19 @@ import Service from '../src/pages/services/Service'
 import AddSchedule from '../src/pages/shedule/AddSchedule'
 import AllShedules from '../src/pages/shedule/AllShedule'
 import Shedule from '../src/pages/shedule/Shedule'
+import AddExpence from '../src/pages/AddExpence'
+import AddInventory from '../src/pages/AddInventory'
+import AdminAttendance from '../src/pages/attendence/AdminAttendence'
+import LeaveRequests from '../src/pages/attendence/LeaveRequests'
+
+
+
 import AddInventory from './pages/AddInventory'
 import AddNotification from './pages/notifications/AddNotification'
 import AllNotification from './pages/notifications/AllNotifications'
 import Notification from './pages/notifications/Notification'
 import AddExpence from './pages/expence/AddExpence'
+
 
 function App() {
 
@@ -37,9 +45,15 @@ function App() {
         <Route path='/displayShedule/:id' element={<Shedule />}/>
         <Route path='/add-expence' element={<AddExpence />} />
         <Route path='/add-inventory' element={<AddInventory />} />
+
+        <Route path="/admin-attendance" element={<AdminAttendance />} />
+        <Route path="/leave-requests" element={<LeaveRequests />} />
+
+        
         <Route path="/notification/all-notification" element={<AllNotification />} />
         <Route path="/notification/add-notification" element={<AddNotification />} />
         <Route path="/notification/:id" element={<Notification />} />
+
 
       </Routes>
     </div>
