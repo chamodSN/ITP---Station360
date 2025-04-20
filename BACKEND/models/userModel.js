@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 const customerSchema = new mongoose.Schema({
+
     name:{type:String,required:true},//validate
     email:{type:String,required:true,unique:true},//validate
     password:{type:String,required:true},//validate
@@ -14,3 +15,4 @@ const customerSchema = new mongoose.Schema({
 const customerModel = mongoose.models.customer || mongoose.model('customer',customerSchema)
 
 export default customerModel
+

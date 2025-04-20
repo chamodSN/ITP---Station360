@@ -40,8 +40,14 @@ import LowStocks from './pages/inventories/lowStock'
 import AddInventory from './pages/AddInventory'
 
 
+
+import Navbar from './components/NavBar'
+import Footer from './components/Footer'
+import AdminDashBoard from './pages/AdminDashBoard'
+
 import Login from './pages/Login'
 import AdmiDashboard from './pages/AdmiDashboard'
+
 
 
 import AddNotification from './pages/notifications/AddNotification'
@@ -51,21 +57,28 @@ import Notification from './pages/notifications/Notification'
 
 
 
+
 function App() {
 
   return (
     <div>
-      <ToastContainer/>
+
+      <Navbar />
+      <ToastContainer />
+
       <Routes>
-        <Route path='/' element={<></>} />
+        <Route path='/' element={<AdminDashBoard />} />
+
     
     
+
         <Route path="/service/add-service" element={<AddService />} />
         <Route path="/service/all-services" element={<AllServices />} />
         <Route path="/service/:id" element={<Service />} />
           
           
         <Route path='/add-schedule' element={<AddSchedule />} />
+
 
         <Route path='/all-expences' element={<AllExpences />} />
         <Route path='/expence/:id' element={<Expence />} />
@@ -76,6 +89,7 @@ function App() {
           
       <Route path='/all-expences' element={<AllExpences />} />
       <Route path='/expence/:id' element={<Expence />} />
+
         <Route path='/add-expence' element={<AddExpence />} />
           
           
@@ -101,6 +115,7 @@ function App() {
 
 
       </Routes>
+      <Footer />
     </div>
   )
 }

@@ -6,7 +6,7 @@ const displayTimeslots = async (req, res) => {
         const date = req.params.date;
         const serviceId = req.params.serviceId;
 
-        const result = await serviceModel.find({ 'bookedSlots.date': date });
+        const result = await serviceModel.find({ _id: serviceId, 'bookedSlots.date': date });
         const service = await serviceModel.findById(serviceId);
 
         // get all possible timeslots
@@ -14,19 +14,15 @@ const displayTimeslots = async (req, res) => {
 
         // Extract booked time slots from result
         let bookedSlots = [];
-        result.forEach(service => {
-            service.bookedSlots.forEach(slot => {
-                const slotDate = new Date(slot.date).toISOString().split('T')[0];
-                if (slotDate === date) {
-                    bookedSlots.push(slot.timeSlot); // Ensure `timeSlot` is correct
-                }
-            });
-        });
+        for (let i = 0; i < service.bookedSlots.length; i++) {
+            const slot = service.bookedSlots[i];
+            const slotDate = new Date(slot.date).toISOString().split('T')[0];
+            if (slotDate === date) {
+                bookedSlots.push(slot.timeSlot);  // Push the booked timeSlot to the array
+            }
+        }
 
         const availableSlots = allTimeSlots.filter(slot => !bookedSlots.includes(slot));
-
-console.log("bookedSlots dates:", result.map(service => service.bookedSlots.map(slot => slot.date)));
-
 
         return res.json({ success: true, availableSlots });
 
@@ -38,7 +34,7 @@ console.log("bookedSlots dates:", result.map(service => service.bookedSlots.map(
 const bookService = async (req, res) => {
     try {
 
-        //remove this line after user authentication is implemented
+        //i need to remove this line after user authentication is implemented
         const { userId, date, timeSlot, vehicleNumPlate, serviceId } = req.body
 
         //const userId = req.user.id;
@@ -46,18 +42,18 @@ const bookService = async (req, res) => {
         const service = await serviceModel.findById(serviceId);
 
         if (!service) {
-            console.log("Service not found for ID:", serviceId);
-            return res.json({ sucess: false, message: "Service not found" })
+            return res.json({ success: false, message: "Service not found" })
         }
 
         if (!service.isBookable || !service.available) {
-            return res.json({ sucess: false, message: "Service not available for booking" })
+            return res.json({ success: false, message: "Service not available for booking" })
         }
 
 
         const existingBooking = await bookingModel.findOne({ serviceId, date, timeSlot });
+        
         if (existingBooking) {
-            return res.json({ sucess: false, message: "Time slot already booked" })
+            return res.json({ success: false, message: "Time slot already booked" })
         }
 
         const booking = new bookingModel({
@@ -73,11 +69,27 @@ const bookService = async (req, res) => {
         service.bookedSlots.push({ date, timeSlot });
         await service.save();
 
-        return res.json({ sucess: true, message: "Booking successful", booking });
+        return res.json({ success: true, message: "Booking successful", booking });
 
     } catch (err) {
-        return res.json({ sucess: false, message: err.message })
+        return res.json({ success: false, message: err.message })
     }
 };
 
-export { bookService, displayTimeslots }
+const displayUserBookings = async (req, res) => {
+    try {
+
+        const userId = "67dd1a12e1485ca648678a8d";
+
+        //const userId = req.user.id;
+
+        const bookings = await bookingModel.find({ userId });
+
+        return res.json({ success: true, bookings });
+
+    } catch (err) {
+        return res.json({ success: false, message: err.message })
+    }
+}
+
+export { bookService, displayTimeslots, displayUserBookings }
