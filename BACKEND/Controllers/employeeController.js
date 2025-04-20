@@ -3,6 +3,8 @@ import validator from 'validator';
 import EmployeeModel from '../models/employeeModel.js';
 import bcrypt from 'bcrypt';
 import cloudinary from 'cloudinary';
+import jwt from 'jsonwebtoken'
+
 
 const employeeRegistration = async (req, res) => {
     try {
@@ -85,8 +87,7 @@ const viewEmployee = async (req, res) => {
 const updateEmployee = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, email, password,address,dob,phone,image, hourlyRate, role } = req.body;
-        const imageFile = req.file;
+        const { name, email,phone, role } = req.body;
 
         let employee = await EmployeeModel.findById(id);
         if (!employee) {
@@ -96,23 +97,12 @@ const updateEmployee = async (req, res) => {
         let updatedData = {
             name: name || employee.name,
             email: email || employee.email,
-            password: password || employee.password,
-            address: address || employee.address,
-            dob: dob || employee.dob,
             phone: phone || employee.phone,
-            hourlyRate: hourlyRate || employee.hourlyRate,
             role: role || employee.role,        
             
         };
 
         console.log(updatedData);
-
-    
-
-        if (imageFile) {
-            const imageUpload = await cloudinary.uploader.upload(imageFile.path, { resource_type: "image" });
-            updatedData.image = imageUpload.secure_url;
-        }
 
         employee = await EmployeeModel.findByIdAndUpdate(id, updatedData, { new: true });
 
@@ -144,5 +134,60 @@ const deleteEmployee = async (req, res) => {
 }
 
 
+//API for employee login
 
-export  {employeeRegistration, allEmployees, viewEmployee , updateEmployee, deleteEmployee};
+const loginEmployee = async (req,res)=> {
+
+    try{
+
+        const {email,password } = req.body
+        const employee = await EmployeeModel.findOne({email})
+
+        if(!employee){
+            return res.json({success:false,message:"Invalid credentials"})
+        }
+
+        const isMatch = await bcrypt.compare(password,employee.password)
+
+        if(isMatch) {
+
+            const token = jwt.sign({id:employee._id},process.env.JWT_SECRET)
+
+            res.json({ success: true, token });
+        }else {
+            res.json({success:false,message:'Invalid credentials'})
+        }
+
+    }catch(error) {
+        console.log(error);
+        return res.json({ success: false, message: "Internal Server Error" });
+
+    }
+}
+
+//ApI to get Employee profile for Employee panel
+
+const employeeProfile = async (req,res) => {
+
+    try {
+
+        const {empId} = req.body
+        const profileData = await EmployeeModel.findById(empId).select('-password')
+            
+        res.json({success:true,profileData})
+
+    }catch (error) {
+
+    }
+
+    
+
+}
+
+//
+
+
+
+
+
+export  {employeeRegistration, allEmployees, viewEmployee , updateEmployee, deleteEmployee,loginEmployee};

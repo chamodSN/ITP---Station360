@@ -1,6 +1,6 @@
 
 import expencemodel from '../models/expencemodel.js';
-
+import jwt from 'jsonwebtoken'; 
 
 const addExpence =async(req,res)=>{
     try{
@@ -88,5 +88,28 @@ const updateExpence = async(req,res) =>{
     
 }
 
+//API for admin login
 
-export {addExpence, displayAllExpence,displaySingleExpence,deleteSingleExpence,updateExpence }
+const loginAdmin = async (req, res) => {
+    try {
+
+        const{email,password} = req.body;
+
+        if(email===process.env.ADMIN_EMAIL && password===process.env.ADMIN_PASSWORD){
+
+            const token = jwt.sign({ email }, process.env.JWT_SECRET);
+            res.json({ success: true,message:"Admin Loged", token });
+
+        } else {
+             res.json({ success: false, message: "Invalid credentials" });
+        }
+
+
+    }catch(error) {
+        console.log(error)
+        return res.json({ success: false, message: "Internal Server Error" });
+    } 
+}
+
+
+export {addExpence, displayAllExpence,displaySingleExpence,deleteSingleExpence,updateExpence, loginAdmin }
