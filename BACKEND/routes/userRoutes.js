@@ -10,7 +10,8 @@ userRoute.get('/all-vehicles',getAllVehicles);
 userRoute.get('/vehicle/:id',getVehicle);
 userRoute.put('/update-vehicle/:id', upload.single('Image'),updateVehicle);
 userRoute.delete('/vehicle/:id',deleteVehicle);
+userRoute.post('/register',registerUser)
+userRoute.post('/login',loginUser)
 
 export default userRoute
-
 
