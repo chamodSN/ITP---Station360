@@ -30,9 +30,11 @@ import AdminAttendance from '../src/pages/attendence/AdminAttendence'
 import LeaveRequests from '../src/pages/attendence/LeaveRequests'
 
 
-import AddNotification from './pages/notifications/AddNotification'
-import AllNotification from './pages/notifications/AllNotifications'
-import Notification from './pages/notifications/Notification'
+// Notifications
+import AddNotification from './pages/notifications/AddNotification';
+import AllNotification from './pages/notifications/AllNotifications';
+import Notification from './pages/notifications/Notification';
+
 import LowStocks from './pages/inventories/lowStock'
 
 
@@ -104,9 +106,10 @@ function App() {
         <Route path="/leave-requests" element={<LeaveRequests />} />
         
 
-        <Route path="/notification/all-notification" element={<AllNotification />} />
-        <Route path="/notification/add-notification" element={<AddNotification />} />
+        {/* Notifications */}
+        <Route path="/all-notifications" element={<AllNotification />} />
         <Route path="/notification/:id" element={<Notification />} />
+        <Route path="/add-notification" element={<AddNotification />} />
 
         <Route path='/add-inventory' element={<AddInventory />} />
         <Route path='/low-stocks' element={<LowStocks />} />

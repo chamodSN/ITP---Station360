@@ -3,6 +3,9 @@ import cors from 'cors'
 import 'dotenv/config'
 import connectDB from './config/mongodb.js'
 import connectCloudinary from './config/cloudinary.js'
+import cron from 'node-cron';
+import { deleteOldNotifications } from './Controllers/notificationController.js'
+
 
 import userRoute from './routes/userRoutes.js';
 import adminRoute from './routes/adminRoute.js';
@@ -45,3 +48,8 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log("Server started", port)
 })
+
+cron.schedule('0 0 * * *', async () => {
+    console.log('Running daily notification cleanup...');
+    await deleteOldNotifications();
+});
