@@ -1,6 +1,6 @@
 
 import  express,{Router} from 'express'
-import {addExpence, displayAllExpence, displaySingleExpence,deleteSingleExpence,updateExpence,loginAdmin} from '../Controllers/adminController.js'
+import {addExpence, displayAllExpence, displaySingleExpence,deleteSingleExpence,updateExpence,loginAdmin,logoutAdmin} from '../Controllers/adminController.js'
 import authAdmin from '../middleware/authAdmin.js'
 
 
@@ -11,7 +11,8 @@ adminRoute.post('/add-expence', addExpence)
 adminRoute.get('/all-expence', displayAllExpence)
 adminRoute.get('/expence/:id', displaySingleExpence)
 adminRoute.delete('/expence/:id', deleteSingleExpence)
-adminRoute.post('/login', loginAdmin)
+adminRoute.post('/admin-login', loginAdmin)
+adminRoute.post('/logout', logoutAdmin)
 adminRoute.put('/expence/:id', updateExpence)
 
 export default adminRoute

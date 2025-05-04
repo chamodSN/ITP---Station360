@@ -1,9 +1,8 @@
 import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { AdminContext } from '../context/AdminContext';
 import { useNavigate } from 'react-router-dom';
-
+import { useAdminAuthStore } from '../store/authAdmin';
 
 const Login = () => {
     const [state, setState] = useState('Admin');
@@ -11,28 +10,25 @@ const Login = () => {
     const [password, setPassword] = useState('');
 
     const navigate = useNavigate();
-
-
-    const { setAToken, backendUrl } = useContext(AdminContext);
+    const { login } = useAdminAuthStore();
 
     const onSubmitHandler = async (event) => {
         event.preventDefault();
         try {
             if (state === 'Admin') {
-                const { data } = await axios.post(backendUrl + '/api/admin/login', { email, password });
-
-                if (data.success) {
-                    localStorage.setItem('aToken', data.token);
-                    setAToken(data.token);
-                    toast.success("Login Success");
-                    navigate('/admin-dashboard');
-                } else {
-                    toast.error(data.message);
-                }
-            } 
+                await login(email, password);
+                toast.success("Login successful");
+                navigate('/');
+            }
         } catch (error) {
             console.error(error.message);
+            toast.error(error?.response?.data?.message || "Login failed");
         }
+    };
+
+    const handleEmployeeLogin = () => {
+        // Redirect to employee login page
+        window.location.href = 'http://localhost:5173/login';
     };
 
     return (
@@ -67,7 +63,7 @@ const Login = () => {
                 {state === 'Admin' ? (
                     <p>
                         Employee Login?{' '}
-                        <span className="text-primary underline cursor-pointer" onClick={() => setState('employee')}>
+                        <span className="text-primary underline cursor-pointer" onClick={handleEmployeeLogin}>
                             Click here
                         </span>
                     </p>
