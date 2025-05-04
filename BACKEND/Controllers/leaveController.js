@@ -1,9 +1,11 @@
 import LeaveModel from "../models/leaveModel.js";
 import EmployeeModel from "../models/employeeModel.js";
 
+
+//used in ApplyLeave.jsx
 export const applyLeave = async (req, res) => {
     try {
-        const employeeId = "67d677f33fd67fd054dd044f"
+        const employeeId = req.employeeId;
         const { leaveType, leaveDate, reason } = req.body;
 
         console.log("Received data:", req.body);
@@ -31,22 +33,21 @@ export const applyLeave = async (req, res) => {
 // Get All Leave Requests (Admin)
 export const getAllLeaves = async (req, res) => {
     try {
-        const leaves = await LeaveModel.find();
+        const leaves = await LeaveModel.find()
+            .populate('employee', 'name email phone role')
+            .sort({ appliedAt: -1 });
         res.status(200).json({ success: true, leaves });
     } catch (error) {
         res.status(500).json({ success: false, message: "Server error", error });
     }
 };
 
+//used in ApplyLeave.jsx
 export const getAllLeavesOfEmployees = async (req, res) => {
     try {
-
-        const { id } = req.params;
-        
-        const leaves = await LeaveModel.find({ employee: id }); 
-
+        const id = req.employeeId;
+        const leaves = await LeaveModel.find({ employee: id });
         return res.status(200).json({ success: true, leaves });
-
     } catch (error) {
         console.log(error)
         res.status(500).json({ success: false, message: "Server error", error });

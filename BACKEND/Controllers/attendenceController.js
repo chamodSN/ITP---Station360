@@ -2,9 +2,11 @@ import Attendance from "../models/attendenceModel.js";
 import Employee from "../models/employeeModel.js";
 import moment from "moment";
 
+
+//used in EmployeeProfile
 const markAttendance = async (req, res) => {
     try {
-        const { employeeId } = req.body;
+        const employeeId = req.employeeId;
 
         const employee = await Employee.findById(employeeId);
         if (!employee) return res.status(404).json({ success: false, message: "Employee not found" });
@@ -19,7 +21,7 @@ const markAttendance = async (req, res) => {
         const attendance = new Attendance({
             employeeId,
             date: today,
-            checkIn: moment().format("HH:mm:ss"),
+            checkInTime: moment().format("HH:mm:ss"),
         });
 
         await attendance.save();
@@ -29,24 +31,24 @@ const markAttendance = async (req, res) => {
     }
 };
 
-
+//used in EmployeeProfile
 const markLeave = async (req, res) => {
     try {
-        const { employeeId } = req.body;
+        const employeeId = req.employeeId;
 
         const today = moment().format("YYYY-MM-DD");
         const attendance = await Attendance.findOne({ employeeId, date: today });
 
         if (!attendance) return res.status(404).json({ success: false, message: "No attendance record found for today" });
 
-        if (attendance.checkOut) {
+        if (attendance.checkOutTime) {
             return res.status(400).json({ success: false, message: "Employee already checked out" });
         }
 
-        attendance.checkOut = moment().format("HH:mm:ss");
+        attendance.checkOutTime = moment().format("HH:mm:ss");
 
-        const checkInTime = moment(attendance.checkIn, "HH:mm:ss");
-        const checkOutTime = moment(attendance.checkOut, "HH:mm:ss");
+        const checkInTime = moment(attendance.checkInTime, "HH:mm:ss");
+        const checkOutTime = moment(attendance.checkOutTime, "HH:mm:ss");
         attendance.workHours = checkOutTime.diff(checkInTime, "hours", true);
 
         await attendance.save();
@@ -56,11 +58,57 @@ const markLeave = async (req, res) => {
     }
 };
 
+const getTodayAttendance = async (req, res) => {
+    try {
+        const { employeeId } = req.params;
+        const today = moment().format("YYYY-MM-DD");
+
+        const attendance = await Attendance.findOne({
+            employeeId: employeeId,
+            date: today
+        });
+
+        if (!attendance) {
+            return res.status(200).json({
+                success: true,
+                message: "No attendance record found for today",
+                data: null
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Today's attendance retrieved successfully",
+            data: attendance
+        });
+    } catch (error) {
+        console.error("Error in getTodayAttendance:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};
 
 const getAttendanceRecords = async (req, res) => {
     try {
         const { employeeId } = req.params;
-        const records = await Attendance.find({ employeeId }).sort({ date: -1 });
+        const { id } = req.query;
+
+        let query = {};
+
+        // If ID is provided, get single record
+        if (id) {
+            query = { _id: id };
+        } else {
+            // Otherwise get all records for the employee
+            query = { employeeId };
+        }
+
+        const records = await Attendance.find(query)
+            .populate('employeeId', 'name email')
+            .sort({ date: -1, checkInTime: -1 });
 
         if (!records.length) {
             return res.status(404).json({ success: false, message: "No attendance records found" });
@@ -72,6 +120,28 @@ const getAttendanceRecords = async (req, res) => {
     }
 };
 
+const getAllAttendanceRecords = async (req, res) => {
+    try {
+        const records = await Attendance.find()
+            .populate('employeeId', 'name email')
+            .sort({ date: -1, checkInTime: -1 });
+
+        // Return empty array instead of 404 when no records exist
+        res.status(200).json({
+            success: true,
+            records: records || [],
+            message: records.length ? "Attendance records retrieved successfully" : "No attendance records found"
+        });
+    } catch (error) {
+        console.error("Error in getAllAttendanceRecords:", error);
+        res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message,
+            records: []
+        });
+    }
+};
 
 const calculateSalary = async (req, res) => {
     try {
@@ -126,4 +196,4 @@ const updateAttendance = async (req, res) => {
     }
 };
 
-export {markAttendance, markLeave, getAttendanceRecords, calculateSalary,updateAttendance}
+export { markAttendance, markLeave, getTodayAttendance, getAttendanceRecords, getAllAttendanceRecords, calculateSalary, updateAttendance }
