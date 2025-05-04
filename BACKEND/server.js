@@ -6,7 +6,7 @@ import connectDB from './config/mongodb.js'
 import connectCloudinary from './config/cloudinary.js'
 import cookieParser from 'cookie-parser'
 import cron from 'node-cron';
-import { deleteOldNotifications } from './Controllers/notificationController.js
+import { deleteOldNotifications } from './Controllers/notificationController.js';
 
 import userRoute from './routes/userRoutes.js';
 import authRoutes from './routes/authRoutes.js';
@@ -17,8 +17,8 @@ import bookingRoute from './routes/bookingRoute.js';
 import sheduleRoute from './routes/sheduleRoute.js';
 import employeeRoute from './routes/employeeRoute.js';
 
-import attendenceRouter from './routes/attendenceRoute.js'
-import leaveRoute from './routes/leaveRoute.js'
+import attendenceRouter from './routes/attendenceRoute.js';
+import leaveRoute from './routes/leaveRoute.js';
 import notificationsRoute from './routes/notificationRoute.js';
 import inventoryRoute from './routes/inventoryRoute.js';
 

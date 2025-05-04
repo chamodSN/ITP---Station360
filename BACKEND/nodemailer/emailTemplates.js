@@ -151,4 +151,37 @@ export const TWO_FACTOR_SETUP_TEMPLATE = `
 </html>
 `;
 
+export const EMPLOYEE_WELCOME_EMAIL_TEMPLATE = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Welcome to Station360!</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; padding: 20px;">
+  <div style="background: linear-gradient(to right, #2196F3, #0b7dda); padding: 20px; text-align: center;">
+    <h1 style="color: white; margin: 0;">Welcome to Station360!</h1>
+  </div>
+  <div style="background-color: #f5f5f5; padding: 20px; border-radius: 0 0 5px 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <p>Hi <strong>{name}</strong>,</p>
+    <p>Welcome to the Station360 team! We're excited to have you join us. 🎉</p>
+    <p>Your role as <strong>{position}</strong> is crucial to our mission, and we’re confident you'll make a great impact.</p>
+    <p>Here are a few things to help you get started:</p>
+    <ul>
+      <li>Access your employee portal: <a href="{portalLink}">{portalLink}</a></li>
+      <li>Connect with your team lead: <strong>{teamLeadName}</strong></li>
+      <li>Read our onboarding guide: <a href="{onboardingGuideLink}">Onboarding Guide</a></li>
+    </ul>
+    <p>If you have any questions or need assistance, don't hesitate to reach out.</p>
+    <p>Looking forward to achieving great things together!</p>
+    <p>Best regards,<br>The Station360 HR Team</p>
+  </div>
+  <div style="text-align: center; margin-top: 20px; font-size: 0.9em; color: #999;">
+    <p>This is an automated message. Please do not reply directly to this email.</p>
+  </div>
+</body>
+</html>
+`;
+
 
