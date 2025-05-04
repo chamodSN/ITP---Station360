@@ -1,6 +1,6 @@
 
 import expencemodel from '../models/expencemodel.js';
-import jwt from 'jsonwebtoken'; 
+import { generateAdminTokenAndSetCookie } from '../utils/generateAdminTokenAndSetCookie.js';
 
 const addExpence =async(req,res)=>{
     try{
@@ -90,26 +90,32 @@ const updateExpence = async(req,res) =>{
 
 //API for admin login
 
+// Updated admin login
 const loginAdmin = async (req, res) => {
-    try {
+    const { email, password } = req.body;
 
-        const{email,password} = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ success: false, message: "All fields are required" });
+    }
 
-        if(email===process.env.ADMIN_EMAIL && password===process.env.ADMIN_PASSWORD){
+    if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+        generateAdminTokenAndSetCookie(res);
 
-            const token = jwt.sign({ email }, process.env.JWT_SECRET);
-            res.json({ success: true,message:"Admin Loged", token });
+        return res.status(200).json({
+            success: true,
+            message: "Admin logged in successfully",
+        });
+    }
 
-        } else {
-             res.json({ success: false, message: "Invalid credentials" });
-        }
+    return res.status(401).json({ success: false, message: "Invalid credentials" });
+};
+
+// Admin logout stays the same
+const logoutAdmin = async (req, res) => {
+    res.clearCookie("Atoken");
+    res.status(200).json({ success: true, message: "Logged out successfully" });
+};
 
 
-    }catch(error) {
-        console.log(error)
-        return res.json({ success: false, message: "Internal Server Error" });
-    } 
-}
 
-
-export {addExpence, displayAllExpence,displaySingleExpence,deleteSingleExpence,updateExpence, loginAdmin }
+export {addExpence, displayAllExpence,displaySingleExpence,deleteSingleExpence,updateExpence, loginAdmin,logoutAdmin }

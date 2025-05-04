@@ -1,13 +1,16 @@
+import dotenv from 'dotenv'
+dotenv.config()
 import express from 'express'
 import cors from 'cors'
-import 'dotenv/config'
 import connectDB from './config/mongodb.js'
 import connectCloudinary from './config/cloudinary.js'
+import cookieParser from 'cookie-parser'
 import cron from 'node-cron';
-import { deleteOldNotifications } from './Controllers/notificationController.js'
-
+import { deleteOldNotifications } from './Controllers/notificationController.js
 
 import userRoute from './routes/userRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+
 import adminRoute from './routes/adminRoute.js';
 import serviceRoute from './routes/serviceRoute.js';
 import bookingRoute from './routes/bookingRoute.js';
@@ -25,19 +28,26 @@ const app = express()
 const port = process.env.PORT || 4200
 
 app.use(express.json())
-app.use(cors())
+app.use(cors({
+    origin: ["http://localhost:5175", "http://localhost:5174", "http://localhost:5173"],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Cookie']
+}))
+app.use(cookieParser())
 connectDB()
 connectCloudinary()
 
-app.use('/api/admin', adminRoute)
+app.use("/api/auth", authRoutes);
 app.use('/api/admin', adminRoute)
 app.use('/api/user', userRoute)
 app.use('/api/admin/employee', employeeRoute)
-app.use('/api/admin/attendence', attendenceRouter)
+app.use('/api/attendence', attendenceRouter)
 app.use('/api/admin/notification', notificationsRoute)
 app.use('/api/admin/service', serviceRoute)
 app.use('/api/admin/shedule', sheduleRoute)
-app.use('/api/emp/leave', leaveRoute)
+app.use('/api/emp/shedule', sheduleRoute)
+app.use('/api/leave', leaveRoute)
 app.use('/api', bookingRoute)
 app.use('/api/admin/inventory', inventoryRoute)
 
