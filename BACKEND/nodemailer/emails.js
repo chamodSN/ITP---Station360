@@ -85,3 +85,28 @@ export const send2FAEmail = async (email, name, secret) => {
         console.error("Error sending 2FA setup email:", err);
     }
 };
+
+export const sendEmployeeWelcomeEmail = async (email, name, position) => {
+    const portalLink = "https://portal.station360.com";
+    const teamLeadName = "John Smith";
+    const onboardingGuideLink = "https://station360.com/onboarding-guide";
+
+    const html = EMPLOYEE_WELCOME_EMAIL_TEMPLATE
+        .replace("{name}", name)
+        .replace("{position}", position)
+        .replace("{portalLink}", portalLink)
+        .replace("{teamLeadName}", teamLeadName)
+        .replace("{onboardingGuideLink}", onboardingGuideLink);
+
+    try {
+        await transporter.sendMail({
+            from: `"${sender.name}" <${sender.email}>`,
+            to: email,
+            subject: "Welcome to Station360!",
+            html
+        });
+        console.log("Employee welcome email sent");
+    } catch (err) {
+        console.error("Error sending employee welcome email:", err);
+    }
+};
