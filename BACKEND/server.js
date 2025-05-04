@@ -5,6 +5,8 @@ import cors from 'cors'
 import connectDB from './config/mongodb.js'
 import connectCloudinary from './config/cloudinary.js'
 import cookieParser from 'cookie-parser'
+import cron from 'node-cron';
+import { deleteOldNotifications } from './Controllers/notificationController.js
 
 import userRoute from './routes/userRoutes.js';
 import authRoutes from './routes/authRoutes.js';
@@ -56,3 +58,8 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log("Server started", port)
 })
+
+cron.schedule('0 0 * * *', async () => {
+    console.log('Running daily notification cleanup...');
+    await deleteOldNotifications();
+});

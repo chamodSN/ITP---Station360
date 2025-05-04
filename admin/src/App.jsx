@@ -52,42 +52,42 @@ function App() {
 
       <Routes>
         <Route path="/" element={<AdminDashBoard />} />
-        
+
         {/* Services */}
         <Route path="/service/add-service" element={<AddService />} />
         <Route path="/service/all-services" element={<AllServices />} />
         <Route path="/service/:id" element={<Service />} />
-        
+
         {/* Schedules */}
         <Route path="/add-schedule" element={<AddSchedule />} />
         <Route path="/all-shedules" element={<AllShedules />} />
         <Route path="/displayShedule/:id" element={<Shedule />} />
-        
+
         {/* Expenses */}
         <Route path="/all-expences" element={<AllExpences />} />
         <Route path="/add-expence" element={<AddExpence />} />
         <Route path="/expence/:id" element={<Expence />} />
-        
+
         {/* Inventories */}
         <Route path="/add-inventory" element={<AddInventory />} />
         <Route path="/inventories" element={<AllInventory />} />
         <Route path="/item/:id" element={<Inventory />} />
         <Route path="/low-stocks" element={<LowStocks />} />
-        
+
         {/* Attendance */}
         <Route path="/admin-attendance" element={<AdminAttendance />} />
         <Route path="/leave-requests" element={<LeaveRequests />} />
-        
+
         {/* Notifications */}
         <Route path="/notification/all-notification" element={<AllNotification />} />
         <Route path="/notification/add-notification" element={<AddNotification />} />
         <Route path="/notification/:id" element={<Notification />} />
-        
+
         {/* Users */}
         <Route path="/users" element={<UsersList />} />
         <Route path="/user/:id" element={<User />} />
         <Route path="/user-report" element={<UserReport />} />
-        
+
         {/* Login */}
         <Route path="/login" element={<Login />} />
       </Routes>
