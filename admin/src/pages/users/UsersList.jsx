@@ -10,8 +10,6 @@ const UserList = () => {
 
     useEffect(() => {
         getAllUsers();
-
-        // Get search query from the URL
         const searchParams = new URLSearchParams(location.search);
         const query = searchParams.get('search');
         setSearchQuery(query || '');
@@ -30,22 +28,29 @@ const UserList = () => {
             <h1 className="text-3xl font-bold mb-6">
                 {searchQuery ? `Search results for "${searchQuery}"` : 'Users List'}
             </h1>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="space-y-6">
                 {filteredUsers.map((user) => (
                     <div
                         key={user._id}
-                        className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
-                        onClick={() => navigate(`/user/${user._id}`)}
+                        className="flex items-center bg-white border border-blue-100 rounded-lg shadow-sm px-4 py-4 hover:shadow-md transition"
                     >
                         <img
                             src={user.image}
                             alt={user.name}
-                            className="w-full h-48 object-cover"
+                            className="w-24 h-24 object-cover rounded-md border mr-6"
                         />
-                        <div className="p-4">
-                            <h2 className="text-xl font-semibold mb-2">{user.name}</h2>
-                            <p className="text-primary font-semibold">Email : {user.email}</p>
+                        <div className="flex-1 min-w-0">
+                            <div className="font-bold text-lg mb-1">Name: {user.name}</div>
+                            <div className="text-gray-600 mb-1">Email: {user.email}</div>
+                            {/* Add more user details here if needed */}
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                            <button
+                                className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition"
+                                onClick={() => navigate(`/user/${user._id}`)}
+                            >
+                                View Details
+                            </button>
                         </div>
                     </div>
                 ))}

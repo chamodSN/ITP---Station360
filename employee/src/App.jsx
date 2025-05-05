@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import NavBar from './components/NavBar'
 import Footer from './components/Footer'
 import UserNotifications from './pages/UserNotifications';
+import Login from './pages/Login';
 
 function App() {
   
@@ -17,6 +18,7 @@ function App() {
       <Routes>
         
         <Route path="/notifications/:audience" element={<UserNotifications />} />
+        <Route path="/login" element={<Login />} />
       </Routes>
       <Footer />
     </div>
