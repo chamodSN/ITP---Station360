@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const serviceSchema = new mongoose.Schema({
-    serviceName: { type: String, required: true, maxlength: 20 },
+    serviceName: { type: String, required: true, maxlength: 100 },
     category: { type: String, default: "General Maintenance & Inspection" },
     displayImage: { type: String, required: true },
     description: { type: String, required: true },

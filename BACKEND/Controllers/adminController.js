@@ -1,18 +1,17 @@
 
 import expencemodel from '../models/expencemodel.js';
-
+import { generateAdminTokenAndSetCookie } from '../utils/generateAdminTokenAndSetCookie.js';
 
 const addExpence =async(req,res)=>{
     try{
 
-        const { ExpenceName,ExpenceType,Reason,Cost}=req.body
+        const { ExpenceType,Reason,Cost}=req.body
 
-        if (!ExpenceName || !ExpenceType || !Reason || !Cost) {
+        if ( !ExpenceType || !Reason || !Cost) {
             return res.json({success: false, message: "All fields are required."});
         }
 
         const expenceData = {
-            ExpenceName,
             ExpenceType,
             Reason,
             Cost,
@@ -73,13 +72,13 @@ const updateExpence = async(req,res) =>{
 
         const expenceId = req.params.id;
 
-        const {ExpenceName,ExpenceType,Reason,Cost}=req.body
+        const {ExpenceType,Reason,Cost}=req.body
 
-        if (!ExpenceName || !ExpenceType || !Reason || !Cost) {
+        if ( !ExpenceType || !Reason || !Cost) {
             return res.json({success: false, message: "All fields are required."});
         }
 
-        await expencemodel.findByIdAndUpdate(expenceId,{$set:{ ExpenceName,ExpenceType,Reason,Cost}})
+        await expencemodel.findByIdAndUpdate(expenceId,{$set:{ ExpenceType,Reason,Cost}})
         
         return res.json({success:true,message:"Expence update successfully."})
 
@@ -89,5 +88,34 @@ const updateExpence = async(req,res) =>{
     
 }
 
+//API for admin login
 
-export {addExpence, displayAllExpence,displaySingleExpence,deleteSingleExpence,updateExpence }
+// Updated admin login
+const loginAdmin = async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ success: false, message: "All fields are required" });
+    }
+
+    if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+        generateAdminTokenAndSetCookie(res);
+
+        return res.status(200).json({
+            success: true,
+            message: "Admin logged in successfully",
+        });
+    }
+
+    return res.status(401).json({ success: false, message: "Invalid credentials" });
+};
+
+// Admin logout stays the same
+const logoutAdmin = async (req, res) => {
+    res.clearCookie("Atoken");
+    res.status(200).json({ success: true, message: "Logged out successfully" });
+};
+
+
+
+export {addExpence, displayAllExpence,displaySingleExpence,deleteSingleExpence,updateExpence, loginAdmin,logoutAdmin }

@@ -1,6 +1,8 @@
 import { AppContext } from '../context/AppContext';
 import React, { useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import RelatedServices from './RelatedServices';
+import { FaTag, FaList, FaCheckCircle } from "react-icons/fa";
 
 const ServiceDetails = ({ setIsBookable }) => {
 
@@ -28,34 +30,56 @@ const ServiceDetails = ({ setIsBookable }) => {
     }, [service, setIsBookable, id]);
 
     return service && (
-        <div>
-            <div><h1>{service.serviceName}</h1></div>
+        <div className="container mx-auto p-4">
 
-            <p>Category:</p>
-
-            <p>{service.category}</p>
-
-            <br />
-            <p>Price:</p>
-            <p>{service.price}</p>
-            <br />
-            <p>Available:</p>
-            <p>{service.available ? "Yes" : "No"}</p>
-            <br />
-            <p>Bookable:</p>
-            <p>{service.isBookable ? "Yes" : "No"}</p>
-            <br />
-            <p>Description:</p>
-            <p>{service.description}</p>
-            <br />
-            <p>Specifications:</p>
-            <p>{service.specifications}</p>
-            <br />
-            <div>
-
-                <p>Display Image:</p>
-                <img src={service.displayImage} alt={service.serviceName} style={{ width: "300px" }} />
+            <div className="text-3xl font-bold text-gray-800 mb-6">
+                <p>{service.serviceName.toUpperCase()}</p>
+                <hr className="border-2 border-primary w-20 mt-2" />
             </div>
+
+            <div className="mb-4">
+                <div className="text-gray-600">
+                    <p>{service.category}</p>
+                    <hr className="border-1 border-primary w-20 mt-2" />
+                </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-6 items-start">
+                <div className="w-full sm:w-1/3">
+                    <img src={service.displayImage} alt={service.serviceName} className="w-full max-w-[350px] rounded-lg shadow-md" />
+                </div>
+
+                <div className="w-full sm:w-2/3 p-4 sm:p-8 text-center bg-gray-100">
+                    <p className="text-lg font-semibold text-gray-700 flex justify-center items-center gap-2 mb-4">
+                        <FaTag className="text-red-700" /> Price:
+                    </p>
+                    <p className="text-gray-600">Starting From<b> ${service.price}</b></p>
+                </div>
+
+                <div className="w-full sm:w-2/3 p-4 sm:p-8 bg-gray-100">
+                    <p className="text-lg font-bold text-gray-700 flex items-center gap-2 mb-4">
+                        <FaList className="text-gray-700 " /> SPECIFICATIONS:
+                    </p>
+                    {service.specifications.map((spec, index) => (
+                        <p key={index} className="text-gray-600 flex items-center gap-2">
+                            <FaCheckCircle className="text-green-500" />
+                            <span className="text-gray-800">{spec}</span>
+                        </p>
+                    ))}
+                </div>
+
+            </div>
+
+            <div className="mb-4">
+                <p className="text-lg font-semibold text-gray-700">Description:</p>
+                <p className="text-gray-600">{service.description}</p>
+            </div>
+
+
+
+
+
+            <RelatedServices serviceId={id} category={service.category} />
         </div >
     )
 }
