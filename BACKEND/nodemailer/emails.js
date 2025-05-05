@@ -5,8 +5,10 @@ import {
     PASSWORD_RESET_SUCCESS_TEMPLATE,
     WELCOME_EMAIL_TEMPLATE,
     TWO_FACTOR_SETUP_TEMPLATE,
+    LOW_STOCK_ORDER_TEMPLATE,
     salaryEmailTemplate,
     BILLING_EMAIL_TEMPLATE
+
 } from './emailTemplates.js';
 
 export const sendVerificationEmail = async (email, verificationToken) => {
@@ -113,6 +115,34 @@ export const sendEmployeeWelcomeEmail = async (email, name, position) => {
     }
 };
 
+export const sendLowStockOrderEmail = async (supplierEmail, items) => {
+    try {
+        // Generate the items list HTML
+        const itemsList = items.map(item => `
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;">${item.name}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${item.brand}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${item.quantity}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${item.unitType}</td>
+            </tr>
+        `).join('');
+
+        // Replace the placeholder in the template
+        const emailHtml = LOW_STOCK_ORDER_TEMPLATE.replace('{itemsList}', itemsList);
+
+        await transporter.sendMail({
+            from: `"${sender.name}" <${sender.email}>`,
+            to: supplierEmail,
+            subject: "Low Stock Order Request - Station360",
+            html: emailHtml,
+        });
+        console.log("Low stock order email sent");
+        return { success: true };
+    } catch (err) {
+        console.error("Error sending low stock order email:", err);
+        return { success: false, error: err.message };
+    }
+};
 export const sendSalaryEmail = async (employee, salary) => {
     const transporter = nodemailer.createTransport({
         service: 'gmail', // or your provider
@@ -198,3 +228,4 @@ export const sendBillingEmail = async (booking, tasks, extraExpenses, totalAmoun
         return { success: false, error: err.message };
     }
 };
+

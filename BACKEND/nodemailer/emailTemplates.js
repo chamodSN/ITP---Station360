@@ -184,6 +184,45 @@ export const EMPLOYEE_WELCOME_EMAIL_TEMPLATE = `
 </html>
 `;
 
+export const LOW_STOCK_ORDER_TEMPLATE = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Low Stock Order Request</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background: linear-gradient(to right, #4CAF50, #45a049); padding: 20px; text-align: center;">
+        <h1 style="color: white; margin: 0;">Low Stock Order Request</h1>
+    </div>
+    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 0 0 5px 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <p>Dear Supplier,</p>
+        <p>This is an automated message to inform you that the following items are running low in stock and need to be replenished:</p>
+        
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+            <thead>
+                <tr>
+                    <th style="background-color: #f8f9fa; padding: 10px; border: 1px solid #ddd;">Item Name</th>
+                    <th style="background-color: #f8f9fa; padding: 10px; border: 1px solid #ddd;">Brand</th>
+                    <th style="background-color: #f8f9fa; padding: 10px; border: 1px solid #ddd;">Quantity Needed</th>
+                    <th style="background-color: #f8f9fa; padding: 10px; border: 1px solid #ddd;">Unit Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                {itemsList}
+            </tbody>
+        </table>
+
+        <p>Please process this order as soon as possible to ensure continuous supply.</p>
+        <p>Best regards,<br>Station360 Inventory Management System</p>
+    </div>
+    <div style="text-align: center; margin-top: 20px; color: #888; font-size: 0.8em;">
+        <p>This is an automated message, please do not reply to this email.</p>
+    </div>
+</body>
+</html>
+`;
 export const salaryEmailTemplate = ({ name, month, totalDays, totalHours, baseSalary, totalBonuses, totalDeductions, finalSalary }) => `
   <h2>Salary Slip for ${month}</h2>
   <p>Dear ${name},</p>
