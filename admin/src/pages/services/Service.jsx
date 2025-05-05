@@ -45,16 +45,14 @@ const Service = () => {
 
             formData.append('serviceName', service.serviceName);
             formData.append('category', service.category);
-            formData.append('displayImage', service.displayImage);
             formData.append('description', service.description);
             formData.append('specificationsString', service.specifications);
             formData.append('interval', service.interval);
             formData.append('price', service.price);
             formData.append('available', service.available);
-            formData.append('isBookable', service.isBookable);
 
             if (image) {
-                formData.append('image', image);
+                formData.append('displayImage', image);
             }
 
             const { data } = await axios.put(`http://localhost:4200/api/admin/service/${id}`, formData);
@@ -119,13 +117,6 @@ const Service = () => {
                 }
                 <br />
 
-                <p className="font-semibold mt-4">Bookable:</p>
-                {!isEdit
-                    ? <p>{service.isBookable ? "Yes" : "No"}</p> :
-                    <input type="checkbox" checked={service.isBookable} onChange={(e) => setService(prev => ({ ...prev, isBookable: e.target.checked }))} />
-                }
-                <br />
-
                 <p className="font-semibold mt-4">Description:</p>
                 {!isEdit
                     ? <p>{service.description}</p> :
@@ -141,7 +132,7 @@ const Service = () => {
                 <br />
 
                 {!isEdit
-                    ? '' :
+                    ? <p>{service.interval}</p> :
                     <>
                         <p className="font-semibold mt-4">Interval:</p>
                         <input type="text" value={service.interval} onChange={(e) => setService(prev => ({ ...prev, interval: e.target.value }))} className="border rounded p-2 w-full" />

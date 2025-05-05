@@ -223,4 +223,74 @@ export const LOW_STOCK_ORDER_TEMPLATE = `
 </body>
 </html>
 `;
+export const salaryEmailTemplate = ({ name, month, totalDays, totalHours, baseSalary, totalBonuses, totalDeductions, finalSalary }) => `
+  <h2>Salary Slip for ${month}</h2>
+  <p>Dear ${name},</p>
+  <p>Here are your salary details for <b>${month}</b>:</p>
+  <ul>
+    <li><b>Total Days Worked:</b> ${totalDays}</li>
+    <li><b>Total Hours Worked:</b> ${totalHours}</li>
+    <li><b>Base Salary:</b> ${baseSalary}</li>
+    <li><b>Total Bonuses:</b> ${totalBonuses}</li>
+    <li><b>Total Deductions:</b> ${totalDeductions}</li>
+    <li><b><u>Final Salary:</u></b> <b>${finalSalary}</b></li>
+  </ul>
+  <p>Thank you for your hard work!</p>
+`;
+
+export const BILLING_EMAIL_TEMPLATE = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Billing Details</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(to right, #2196F3, #0b7dda); padding: 20px; text-align: center;">
+    <h1 style="color: white; margin: 0;">Billing Details</h1>
+  </div>
+  <div style="background-color: #f9f9f9; padding: 20px; border-radius: 0 0 5px 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <p>Dear {customerName},</p>
+    <p>Here are the details of your recent service booking:</p>
+    
+    <h3 style="color: #2196F3; margin-top: 20px;">Booking Information</h3>
+    <ul style="list-style: none; padding: 0;">
+      <li style="margin-bottom: 8px;"><strong>Booking ID:</strong> #{bookingId}</li>
+      <li style="margin-bottom: 8px;"><strong>Date:</strong> {bookingDate}</li>
+      <li style="margin-bottom: 8px;"><strong>Time:</strong> {bookingTime}</li>
+      <li style="margin-bottom: 8px;"><strong>Vehicle:</strong> {vehicleDetails}</li>
+      <li style="margin-bottom: 8px;"><strong>Technician:</strong> {technicianName}</li>
+    </ul>
+
+    <h3 style="color: #2196F3; margin-top: 20px;">Tasks Performed</h3>
+    <table style="width: 100%; border-collapse: collapse; margin: 10px 0;">
+      <thead>
+        <tr>
+          <th style="background-color: #f8f9fa; padding: 10px; border: 1px solid #ddd; text-align: left;">Task</th>
+          <th style="background-color: #f8f9fa; padding: 10px; border: 1px solid #ddd; text-align: right;">Price</th>
+        </tr>
+      </thead>
+      <tbody>
+        {tasksList}
+      </tbody>
+    </table>
+
+    {extraExpensesList}
+
+    <div style="margin-top: 20px; padding: 15px; background-color: #e8f4f8; border-radius: 5px;">
+      <h3 style="color: #2196F3; margin: 0;">Total Amount: {totalAmount}</h3>
+    </div>
+
+    <p style="margin-top: 20px;">Thank you for choosing our service!</p>
+    <p>If you have any questions, please don't hesitate to contact us.</p>
+    <p>Best regards,<br>The Station360 Team</p>
+  </div>
+  <div style="text-align: center; margin-top: 20px; color: #888; font-size: 0.8em;">
+    <p>This is an automated message, please do not reply to this email.</p>
+  </div>
+</body>
+</html>
+`;
+
 
