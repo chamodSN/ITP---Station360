@@ -4,7 +4,9 @@ import {
     PASSWORD_RESET_REQUEST_TEMPLATE,
     PASSWORD_RESET_SUCCESS_TEMPLATE,
     WELCOME_EMAIL_TEMPLATE,
-    TWO_FACTOR_SETUP_TEMPLATE
+    TWO_FACTOR_SETUP_TEMPLATE,
+    BOOKING_CANCELLATION_TEMPLATE,
+    BOOKING_CONFIRMATION_TEMPLATE
 } from './emailTemplates.js';
 
 export const sendVerificationEmail = async (email, verificationToken) => {
@@ -108,5 +110,55 @@ export const sendEmployeeWelcomeEmail = async (email, name, position) => {
         console.log("Employee welcome email sent");
     } catch (err) {
         console.error("Error sending employee welcome email:", err);
+    }
+};
+
+export const sendBookingCancellationEmail = async (booking, cancellationReason) => {
+    try {
+        const emailHtml = BOOKING_CANCELLATION_TEMPLATE
+            .replace('{customerName}', booking.userId.name)
+            .replace('{bookingDate}', new Date(booking.date).toLocaleDateString())
+            .replace('{bookingTime}', booking.timeSlot)
+            .replace('{serviceName}', booking.serviceId.serviceName)
+            .replace('{vehicleDetails}', `${booking.vehicleId.brandName} ${booking.vehicleId.modelName} (${booking.vehicleId.plateNumber})`)
+            .replace('{cancellationReason}', cancellationReason);
+
+        await transporter.sendMail({
+            from: `"${sender.name}" <${sender.email}>`,
+            to: booking.userId.email,
+            subject: `Booking Cancellation - ${booking.serviceId.serviceName}`,
+            html: emailHtml
+        });
+
+        console.log("Booking cancellation email sent successfully");
+        return { success: true };
+    } catch (err) {
+        console.error("Error sending booking cancellation email:", err);
+        return { success: false, error: err.message };
+    }
+};
+
+export const sendBookingConfirmationEmail = async (booking) => {
+    try {
+        const emailHtml = BOOKING_CONFIRMATION_TEMPLATE
+            .replace('{customerName}', booking.userId.name)
+            .replace('{serviceName}', booking.serviceId.serviceName)
+            .replace('{bookingDate}', new Date(booking.date).toLocaleDateString())
+            .replace('{bookingTime}', booking.timeSlot)
+            .replace('{endTime}', booking.endTime)
+            .replace('{vehicleDetails}', `${booking.vehicleId.brandName} ${booking.vehicleId.modelName} (${booking.vehicleId.plateNumber})`);
+
+        await transporter.sendMail({
+            from: `"${sender.name}" <${sender.email}>`,
+            to: booking.userId.email,
+            subject: `Booking Confirmation - ${booking.serviceId.serviceName}`,
+            html: emailHtml
+        });
+
+        console.log("Booking confirmation email sent successfully");
+        return { success: true };
+    } catch (err) {
+        console.error("Error sending booking confirmation email:", err);
+        return { success: false, error: err.message };
     }
 };
