@@ -294,3 +294,94 @@ export const BILLING_EMAIL_TEMPLATE = `
 `;
 
 
+export const BOOKING_CANCELLATION_TEMPLATE = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Cancellation</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(to right, #f44336, #d32f2f); padding: 20px; text-align: center;">
+    <h1 style="color: white; margin: 0;">Booking Cancellation</h1>
+  </div>
+  <div style="background-color: #f9f9f9; padding: 20px; border-radius: 0 0 5px 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <p>Dear {customerName},</p>
+    <p>We regret to inform you that your booking has been cancelled by our administration team.</p>
+    <div style="background-color: #fff; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #eee;">
+      <p><strong>Booking Details:</strong></p>
+      <p>Date: {bookingDate}</p>
+      <p>Time: {bookingTime}</p>
+      <p>Service: {serviceName}</p>
+      <p>Vehicle: {vehicleDetails}</p>
+    </div>
+    <p><strong>Reason for Cancellation:</strong></p>
+    <p style="background-color: #fff3f3; padding: 10px; border-radius: 5px; border-left: 4px solid #f44336;">
+      {cancellationReason}
+    </p>
+    <p>We sincerely apologize for any inconvenience this may have caused. Please feel free to book another appointment at your convenience.</p>
+    <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+    <p>Best regards,<br>The Station360 Team</p>
+  </div>
+  <div style="text-align: center; margin-top: 20px; color: #888; font-size: 0.8em;">
+    <p>This is an automated message, please do not reply to this email.</p>
+  </div>
+</body>
+</html>
+`;
+
+export const BOOKING_CONFIRMATION_TEMPLATE = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Confirmation</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(to right, #4CAF50, #45a049); padding: 20px; text-align: center;">
+    <h1 style="color: white; margin: 0;">Booking Confirmation</h1>
+  </div>
+  <div style="background-color: #f9f9f9; padding: 20px; border-radius: 0 0 5px 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <p>Dear {customerName},</p>
+    <p>Thank you for booking with Station360! Your appointment has been confirmed.</p>
+    
+    <div style="background-color: #fff; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #eee;">
+      <p><strong>Booking Details:</strong></p>
+      <p>Service: {serviceName}</p>
+      <p>Date: {bookingDate}</p>
+      <p>Time: {bookingTime} - {endTime}</p>
+      <p>Vehicle: {vehicleDetails}</p>
+    </div>
+
+    <h3 style="color: #2196F3; margin-top: 20px;">Important Instructions:</h3>
+    <ul style="list-style-type: none; padding: 0;">
+      <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">
+        <span style="position: absolute; left: 0; color: #4CAF50;">✓</span>
+        Please arrive 10 minutes before your scheduled time
+      </li>
+      <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">
+        <span style="position: absolute; left: 0; color: #4CAF50;">✓</span>
+        Bring your vehicle's registration documents
+      </li>
+      <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">
+        <span style="position: absolute; left: 0; color: #4CAF50;">✓</span>
+        Remove all personal belongings from your vehicle
+      </li>
+      <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">
+        <span style="position: absolute; left: 0; color: #4CAF50;">✓</span>
+        Our team will contact you if there are any changes to your appointment
+      </li>
+    </ul>
+
+    <p style="margin-top: 20px;">If you need to make any changes to your booking, please contact us at least 24 hours before your appointment.</p>
+    <p>We look forward to serving you!</p>
+    <p>Best regards,<br>The Station360 Team</p>
+  </div>
+  <div style="text-align: center; margin-top: 20px; color: #888; font-size: 0.8em;">
+    <p>This is an automated message, please do not reply to this email.</p>
+  </div>
+</body>
+</html>
+`;
