@@ -4,7 +4,9 @@ import {
     PASSWORD_RESET_REQUEST_TEMPLATE,
     PASSWORD_RESET_SUCCESS_TEMPLATE,
     WELCOME_EMAIL_TEMPLATE,
-    TWO_FACTOR_SETUP_TEMPLATE
+    TWO_FACTOR_SETUP_TEMPLATE,
+    salaryEmailTemplate,
+    BILLING_EMAIL_TEMPLATE
 } from './emailTemplates.js';
 
 export const sendVerificationEmail = async (email, verificationToken) => {
@@ -108,5 +110,91 @@ export const sendEmployeeWelcomeEmail = async (email, name, position) => {
         console.log("Employee welcome email sent");
     } catch (err) {
         console.error("Error sending employee welcome email:", err);
+    }
+};
+
+export const sendSalaryEmail = async (employee, salary) => {
+    const transporter = nodemailer.createTransport({
+        service: 'gmail', // or your provider
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+        }
+    });
+
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: employee.email,
+        subject: `Your Salary Slip for ${salary.month}`,
+        html: salaryEmailTemplate({
+            name: employee.name,
+            month: salary.month,
+            totalDays: salary.totalDays,
+            totalHours: salary.totalHours,
+            baseSalary: salary.baseSalary,
+            totalBonuses: salary.totalBonuses,
+            totalDeductions: salary.totalDeductions,
+            finalSalary: salary.finalSalary
+        })
+    };
+
+    await transporter.sendMail(mailOptions);
+};
+
+export const sendBillingEmail = async (booking, tasks, extraExpenses, totalAmount) => {
+    try {
+        // Generate tasks list HTML
+        const tasksList = tasks.map(task => `
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;">${task.task}</td>
+                <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">$${task.price}</td>
+            </tr>
+        `).join('');
+
+        // Generate extra expenses list HTML if there are any
+        const extraExpensesList = extraExpenses.length > 0 ? `
+            <h3 style="color: #2196F3; margin-top: 20px;">Extra Expenses</h3>
+            <table style="width: 100%; border-collapse: collapse; margin: 10px 0;">
+                <thead>
+                    <tr>
+                        <th style="background-color: #f8f9fa; padding: 10px; border: 1px solid #ddd; text-align: left;">Description</th>
+                        <th style="background-color: #f8f9fa; padding: 10px; border: 1px solid #ddd; text-align: right;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${extraExpenses.map(expense => `
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd;">${expense.description}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">$${expense.amount}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        ` : '';
+
+        // Replace placeholders in the template
+        const emailHtml = BILLING_EMAIL_TEMPLATE
+            .replace('{customerName}', booking.userId.name)
+            .replace('{bookingId}', booking._id)
+            .replace('{bookingDate}', new Date(booking.date).toLocaleDateString())
+            .replace('{bookingTime}', booking.time)
+            .replace('{vehicleDetails}', `${booking.vehicleId.brandName} ${booking.vehicleId.modelName} (${booking.vehicleId.plateNumber})`)
+            .replace('{technicianName}', booking.technicianId.name)
+            .replace('{tasksList}', tasksList)
+            .replace('{extraExpensesList}', extraExpensesList)
+            .replace('{totalAmount}', totalAmount);
+
+        await transporter.sendMail({
+            from: `"${sender.name}" <${sender.email}>`,
+            to: booking.userId.email,
+            subject: `Billing Details for Booking #${booking._id}`,
+            html: emailHtml
+        });
+
+        console.log("Billing email sent successfully");
+        return { success: true };
+    } catch (err) {
+        console.error("Error sending billing email:", err);
+        return { success: false, error: err.message };
     }
 };
