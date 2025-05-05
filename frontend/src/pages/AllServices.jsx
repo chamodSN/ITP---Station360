@@ -1,130 +1,91 @@
-import { AppContext } from '../context/AppContext';
-import React, { useContext, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useAppContext } from '../context/AppContext';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 const AllServices = () => {
-
-    const { category } = useParams();
-    console.log(category);
-    const [filterServices, setFilterServices] = useState([]);
-    const [showFilters, setShowFilters] = useState(false);
-
-    const { services } = useContext(AppContext);
-    console.log(services);
-
     const navigate = useNavigate();
-
-    const applyFilter = () => {
-        if (category) {
-            setFilterServices(services.filter(service => service.category === category));
-
-        } else {
-            setFilterServices(services);
-        }
-    };
+    const { services, servicesLoading, getAllServices } = useAppContext();
 
     useEffect(() => {
-        applyFilter();
-    }, [services, category]);
+        getAllServices();
+    }, []);
 
-    return services && (
-        <>
-            <div>
-                <div>
-                    <p className='text-gray-600'>Browse through the service categories.</p>
+    if (servicesLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary"></div>
+            </div>
+        );
+    }
 
-                    <div className='flex flex-col sm:flex-row items-start gap-5 mt-5'>
+    return (
+        <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-12">
+            <div className="container mx-auto px-4">
+                <motion.h1
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="text-4xl font-bold mb-2 text-center text-gray-800"
+                >
+                    Our Vehicle Services
+                </motion.h1>
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="text-center text-gray-600 mb-12"
+                >
+                    Professional automotive care for your vehicle
+                </motion.p>
 
-                        <div className='flex flex-col gap-4 text-sm text-gray-600'>
-                            <p
-                                onClick={() => category === 'General Maintenance & Inspection' ? navigate('/services') : navigate('/services/General Maintenance & Inspection')}
-                                className={`'w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer'
-            ${category === "General Maintenance & Inspection" ? "bg-indigo-100 text-black" : ""}`}>
-                                General Maintenance & Inspection
-                            </p>
-                            <p
-                                onClick={() => category === 'Oil Change & Lubrication' ? navigate('/services') : navigate('/services/Oil Change & Lubrication')}
-                                className={`'w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer'
-            ${category === "Oil Change & Lubrication" ? "bg-indigo-100 text-black" : ""}`}>
-                                Oil Change & Lubrication
-                            </p>
-                            <p
-                                onClick={() => category === 'Brake Repair & Replacement' ? navigate('/services') : navigate('/services/Brake Repair & Replacement')}
-                                className={`'w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer'
-            ${category === "Brake Repair & Replacement" ? "bg-indigo-100 text-black" : ""}`}>
-                                Brake Repair & Replacement
-                            </p>
-                            <p
-                                onClick={() => category === 'Wheel Alignment & Balancing' ? navigate('/services') : navigate('/services/Wheel Alignment & Balancing')}
-                                className={`'w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer'
-            ${category === "Wheel Alignment & Balancing" ? "bg-indigo-100 text-black" : ""}`}>
-                                Wheel Alignment & Balancing
-                            </p>
-                            <p
-                                onClick={() => category === 'Vehicle Cleaning & Detailing' ? navigate('/services') : navigate('/services/Vehicle Cleaning & Detailing')}
-                                className={`'w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer'
-            ${category === "Vehicle Cleaning & Detailing" ? "bg-indigo-100 text-black" : ""}`}>
-                                Vehicle Cleaning & Detailing
-                            </p>
-                            <p
-                                onClick={() => category === 'Battery & Electrical System Services' ? navigate('/services') : navigate('/services/Battery & Electrical System Services')}
-                                className={`'w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer'
-            ${category === "Battery & Electrical System Services" ? "bg-indigo-100 text-black" : ""}`}>
-                                Battery & Electrical System Services
-                            </p>
-                            <p
-                                onClick={() => category === 'Engine Diagnostics & Repair' ? navigate('/services') : navigate('/services/Engine Diagnostics & Repair')}
-                                className={`'w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer'
-            ${category === "Engine Diagnostics & Repair" ? "bg-indigo-100 text-black" : ""}`}>
-                                Engine Diagnostics & Repair
-                            </p>
-                            <p
-                                onClick={() => category === 'Transmission Repair & Service' ? navigate('/services') : navigate('/services/Transmission Repair & Service')}
-                                className={`'w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer'
-            ${category === "Transmission Repair & Service" ? "bg-indigo-100 text-black" : ""}`}>
-                                Transmission Repair & Service
-                            </p>
-                            <p
-                                onClick={() => category === 'AC & Heating System Services' ? navigate('/services') : navigate('/services/AC & Heating System Services')}
-                                className={`'w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer'
-            ${category === "AC & Heating System Services" ? "bg-indigo-100 text-black" : ""}`}>
-                                AC & Heating System Services
-                            </p>
-                            <p
-                                onClick={() => category === 'Body & Paint Services' ? navigate('/services') : navigate('/services/Body & Paint Services')}
-                                className={`'w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer'
-            ${category === "Body & Paint Services" ? "bg-indigo-100 text-black" : ""}`}>
-                                Body & Paint Services
-                            </p>
-                        </div>
-                        <div className='w-full grid grid-cols-auto gap-4 gap-y-6'>
-                            {
-                                filterServices.map((item, index) => (
-                                    <div onClick={() => navigate(`/service/${item._id}`)} key={item._id} className='border border-blue-200 rounded-xl overflow-hidden cursor-pointer'>
-                                        <img className='bg-blue-50' src={item.displayImage} alt={item.serviceName} />
-                                        <div className='p-4'>
-                                            {
-                                                item.available ?
-                                                    <div className='flex items-center gap-2 text-sm text-center text-green-500'>
-                                                        <p className='w-2 h-2 bg-green-500 rounded-full'></p>
-                                                        <p>Available</p></div> :
-                                                    <div className='flex items-center gap-2 text-sm text-center text-red-500'>
-                                                        <p className='w-2 h-2 bg-red-500 rounded-full'></p><p>Not Available</p></div>
-                                            }
-
-                                            <p className='text-gray-900 text-lg font-medium'>{item.serviceName}</p>
-                                            <p className='text-gray-600 text-sm'>{item.category}</p>
-                                        </div>
-                                    </div>
-                                ))
-                            }
-
-                        </div>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {services.map((service, index) => (
+                        <motion.div
+                            key={service._id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: index * 0.1 }}
+                            whileHover={{ scale: 1.03 }}
+                            className="bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300"
+                            onClick={() => navigate(`/service/${service._id}`)}
+                        >
+                            <div className="relative h-56 overflow-hidden">
+                                <img
+                                    src={service.displayImage}
+                                    alt={service.serviceName}
+                                    className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                                <div className="absolute bottom-4 left-4 right-4">
+                                    <h2 className="text-2xl font-bold text-white mb-1">{service.serviceName}</h2>
+                                    <p className="text-primary-300 font-semibold text-lg">Rs. {service.price}</p>
+                                </div>
+                            </div>
+                            <div className="p-6">
+                                <div className="flex items-center justify-between">
+                                    {service.available ? (
+                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                            <span className="w-2 h-2 mr-2 bg-green-500 rounded-full"></span>
+                                            Available
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                            <span className="w-2 h-2 mr-2 bg-red-500 rounded-full"></span>
+                                            Not Available
+                                        </span>
+                                    )}
+                                    <button className="text-primary hover:text-primary-600 font-medium transition-colors">
+                                        View Details →
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
                 </div>
             </div>
-        </>
-    )
-}
+        </div>
+    );
+};
 
-export default AllServices
+export default AllServices;
