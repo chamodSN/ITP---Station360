@@ -10,6 +10,7 @@ import DisplayEmployeeLeave from './pages/DisplayEmployeeLeave'
 import NavBar from './components/NavBar'
 import Footer from './components/Footer'
 import UserNotifications from './pages/UserNotifications';
+import Login from './pages/Login';
 
 function App() {
   
@@ -28,6 +29,7 @@ function App() {
         <Route path="/employee-profile" element={ <EmployeeProfile />} />
 
         <Route path="/notifications/:audience" element={<UserNotifications />} />
+        <Route path="/login" element={<Login />} />
       </Routes>
       <Footer />
     </div>
