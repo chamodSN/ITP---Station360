@@ -22,20 +22,21 @@ const EmployeeList = () => {
                 {employees.map((employee) => (
                     <div
                         key={employee._id}
-                        className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                        className="bg-white rounded-lg shadow-md p-4 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow"
                         onClick={() => navigate(`/employee-salary/${employee._id}`)}
                     >
                         <img
                             src={employee.image}
                             alt={employee.name}
-                            className="w-full h-48 object-cover"
+                            className="w-32 h-32 object-cover rounded-md flex-shrink-0"
                         />
-                        <div className="p-4">
+                        <div>
                             <h2 className="text-xl font-semibold mb-2">{employee.name}</h2>
                             <p className="text-primary font-semibold">Tel : {employee.phone}</p>
                             <p className="text-primary font-semibold">Role : {employee.role}</p>
                         </div>
                     </div>
+
                 ))}
             </div>
         </div>

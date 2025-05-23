@@ -9,6 +9,7 @@ import Employee from '../models/employeeModel.js';
 import Salary from '../models/salaryModel.js';
 import { sendSalaryEmail } from '../nodemailer/emails.js';
 import { sendBillingEmail } from '../nodemailer/emails.js';
+import { generateSalarySlipPDF } from '../pdf/ReportGenerator.js';
 
 const addExpence = async (req, res) => {
     try {
@@ -41,12 +42,22 @@ const addExpence = async (req, res) => {
 }
 const displayAllExpence = async (req, res) => {
     try {
+        const { search } = req.query;
+        let query = {};
 
-        const AllExpence = await expencemodel.find()
-        return res.json({ success: true, AllExpence })
+        if (search) {
+            query = {
+                $or: [
+                    { ExpenceType: { $regex: search, $options: 'i' } },
+                    { Reason: { $regex: search, $options: 'i' } }
+                ]
+            };
+        }
 
+        const AllExpence = await expencemodel.find(query);
+        return res.json({ success: true, AllExpence });
     } catch (error) {
-        return res.json({ sucess: false, message: error.message })
+        return res.json({ success: false, message: error.message });
     }
 }
 const displaySingleExpence = async (req, res) => {
@@ -170,7 +181,30 @@ export const getCompletedBookings = async (req, res) => {
             return res.status(500).json({ message: 'Internal server error: Invalid bookings data' });
         }
 
-        res.status(200).json(bookings);
+        // Format the response to include all necessary fields and calculate total amount
+        const formattedBookings = bookings.map(booking => {
+            // Calculate total amount from tasks and extra expenses
+            const tasksTotal = booking.tasksPerformed.reduce((sum, task) => sum + (Number(task.price) || 0), 0);
+            const expensesTotal = booking.extraExpenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
+            const totalAmount = tasksTotal + expensesTotal;
+
+            return {
+                _id: booking._id,
+                status: booking.status,
+                totalAmount: totalAmount,
+                tasksPerformed: booking.tasksPerformed || [],
+                extraExpenses: booking.extraExpenses || [],
+                createdAt: booking.createdAt,
+                date: booking.date,
+                timeSlot: booking.timeSlot,
+                userId: booking.userId,
+                serviceId: booking.serviceId,
+                vehicleId: booking.vehicleId,
+                technicianId: booking.technicianId
+            };
+        });
+
+        res.status(200).json(formattedBookings);
     } catch (error) {
         console.error('Error in getCompletedBookings:', error);
         res.status(500).json({ message: error.message });
@@ -228,19 +262,19 @@ export const addExtraExpense = async (req, res) => {
 // Bill user for completed booking
 const billUser = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { totalAmount, tasks, extraExpenses } = req.body;
+        const { bookingId } = req.params;
+        const { tasks, extraExpenses } = req.body;
 
-        console.log('Billing request received:', { id, totalAmount, tasks, extraExpenses });
+        console.log('Billing request received:', { bookingId, tasks, extraExpenses });
 
-        const booking = await Booking.findById(id)
+        const booking = await Booking.findById(bookingId)
             .populate('userId', 'name email')
             .populate('serviceId', 'name')
             .populate('vehicleId', 'brandName modelName plateNumber')
             .populate('technicianId', 'name');
 
         if (!booking) {
-            console.log('Booking not found:', id);
+            console.log('Booking not found:', bookingId);
             return res.status(404).json({ message: 'Booking not found' });
         }
 
@@ -249,19 +283,25 @@ const billUser = async (req, res) => {
             return res.status(400).json({ message: 'Can only bill completed bookings' });
         }
 
-        console.log('Current booking:', booking);
-        console.log('Setting new values:', { tasks, extraExpenses, totalAmount });
+        // Calculate total amount from tasks and extra expenses
+        const tasksTotal = tasks.reduce((sum, task) => sum + (Number(task.price) || 0), 0);
+        const expensesTotal = extraExpenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
+        const calculatedTotal = tasksTotal + expensesTotal;
 
+        console.log('Current booking:', booking);
+        console.log('Setting new values:', { tasks, extraExpenses, calculatedTotal });
+
+        // Update booking with tasks, expenses, and calculated total
         booking.tasksPerformed = tasks;
         booking.extraExpenses = extraExpenses;
-        booking.totalAmount = totalAmount;
+        booking.totalAmount = calculatedTotal; // This will be stored in the document even though it's not in the schema
         booking.status = 'billed';
 
         const savedBooking = await booking.save();
         console.log('Saved booking:', savedBooking);
 
         // Send billing email to customer
-        const emailResult = await sendBillingEmail(booking, tasks, extraExpenses, totalAmount);
+        const emailResult = await sendBillingEmail(booking, tasks, extraExpenses, calculatedTotal);
         
         if (!emailResult.success) {
             console.error('Failed to send billing email:', emailResult.error);
@@ -282,7 +322,7 @@ const billUser = async (req, res) => {
 // Get employee attendance for a specific month
 const getEmployeeAttendance = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { employeeId } = req.query;
         const { month } = req.query;
 
         if (!month) {
@@ -292,22 +332,42 @@ const getEmployeeAttendance = async (req, res) => {
             });
         }
 
+        if (!employeeId) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Employee ID is required" 
+            });
+        }
+
         // Parse the month string into a date
-        const [year, monthNum] = month.split('-');
-        const startDate = new Date(year, monthNum - 1, 1); // First day of month
-        const endDate = new Date(year, monthNum, 0); // Last day of month
+        const [year, monthNum] = month.split('-').map(num => parseInt(num, 10));
+        
+        if (isNaN(year) || isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid month format. Use YYYY-MM"
+            });
+        }
+
+        // Create dates for the first and last day of the month
+        const startDate = new Date(year, monthNum - 1, 1);
+        const endDate = new Date(year, monthNum, 0);
+
+        // Format dates as YYYY-MM-DD strings
+        const startDateStr = `${year}-${String(monthNum).padStart(2, '0')}-01`;
+        const endDateStr = `${year}-${String(monthNum).padStart(2, '0')}-${endDate.getDate()}`;
 
         console.log('Searching attendance for:', {
-            employeeId: id,
-            startDate: startDate.toISOString().split('T')[0],
-            endDate: endDate.toISOString().split('T')[0]
+            employeeId: employeeId,
+            startDate: startDateStr,
+            endDate: endDateStr
         });
 
         const attendanceRecords = await Attendance.find({
-            employeeId: id,
+            employeeId: employeeId,
             date: {
-                $gte: startDate.toISOString().split('T')[0],
-                $lte: endDate.toISOString().split('T')[0]
+                $gte: startDateStr,
+                $lte: endDateStr
             }
         });
 
@@ -315,7 +375,7 @@ const getEmployeeAttendance = async (req, res) => {
 
         const totalHours = attendanceRecords.reduce((sum, record) => {
             console.log('Processing record:', record);
-            return sum + (record.workHours || 0);
+            return sum + (record.hours || record.workHours || 0);
         }, 0);
         
         const totalDays = attendanceRecords.length;
@@ -340,11 +400,11 @@ const getEmployeeAttendance = async (req, res) => {
 // Update only hourlyRate and baseSalary for an employee
 const updateEmployeeBasicSalary = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { employeeId } = req.params;
         const { hourlyRate, baseSalary } = req.body;
 
         const updated = await Employee.findByIdAndUpdate(
-            id,
+            employeeId,
             { hourlyRate, baseSalary },
             { new: true }
         );
@@ -362,11 +422,11 @@ const updateEmployeeBasicSalary = async (req, res) => {
 // Add salary for an employee for a given month
 const addEmployeeSalary = async (req, res) => {
     try {
-        const { id } = req.params; // employeeId
+        const { employeeId } = req.params;
         const { month, bonuses = [], deductions = [] } = req.body; // month: 'YYYY-MM'
 
         // 1. Fetch employee
-        const employee = await Employee.findById(id);
+        const employee = await Employee.findById(employeeId);
         if (!employee) {
             return res.status(404).json({ success: false, message: "Employee not found" });
         }
@@ -376,7 +436,7 @@ const addEmployeeSalary = async (req, res) => {
         const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
 
         const attendanceRecords = await Attendance.find({
-            employeeId: id,
+            employeeId: employeeId,
             date: { $gte: startDate, $lte: endDate }
         });
 
@@ -397,7 +457,7 @@ const addEmployeeSalary = async (req, res) => {
 
         // 6. Create and save salary record
         const salaryRecord = new Salary({
-            employeeId: id,
+            employeeId: employeeId,
             month,
             totalHours,
             totalDays,
@@ -437,4 +497,99 @@ const addEmployeeSalary = async (req, res) => {
     }
 };
 
-export { addExpence, displayAllExpence, displaySingleExpence, deleteSingleExpence, updateExpence, loginAdmin, logoutAdmin, AdminCheckAuth, billUser, getEmployeeAttendance, updateEmployeeBasicSalary, addEmployeeSalary }
+const generateSalarySlip = async (req, res) => {
+    try {
+        const { employeeId } = req.params;
+        const {
+            month,
+            year,
+            basicSalary,
+            allowances,
+            deductions,
+            netSalary,
+            totalHours,
+            totalDays
+        } = req.query;
+
+        console.log('Generating salary slip with data:', { employeeId, ...req.query });
+
+        // Validate input parameters
+        if (!employeeId || !month || !year) {
+            return res.status(400).json({ error: 'Missing required parameters' });
+        }
+
+        // Validate date format
+        const monthNum = parseInt(month);
+        const yearNum = parseInt(year);
+        if (isNaN(monthNum) || isNaN(yearNum) || monthNum < 1 || monthNum > 12) {
+            return res.status(400).json({ error: 'Invalid month or year format' });
+        }
+
+        // Validate date is not in future
+        const selectedDate = new Date(yearNum, monthNum - 1);
+        const currentDate = new Date();
+        if (selectedDate > currentDate) {
+            return res.status(400).json({ error: 'Cannot generate salary slip for future date' });
+        }
+
+        // Get employee data
+        const employee = await Employee.findById(employeeId);
+        if (!employee) {
+            return res.status(404).json({ error: 'Employee not found' });
+        }
+
+        // Prepare data for PDF
+        const pdfData = {
+            employeeName: employee.name || 'N/A',
+            employeeId: employee.employeeId || employeeId,
+            basicSalary: Number(basicSalary || 0),
+            allowances: Number(allowances || 0),
+            deductions: Number(deductions || 0),
+            netSalary: Number(netSalary || 0),
+            totalHours: Number(totalHours || 0),
+            totalDays: Number(totalDays || 0),
+            month: month,
+            year: year
+        };
+
+        console.log('Prepared PDF data:', pdfData);
+
+        try {
+            // Generate PDF
+            const pdf = await generateSalarySlipPDF(pdfData);
+            
+            if (!pdf) {
+                throw new Error('Failed to generate PDF');
+            }
+
+            // Set response headers
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename=salary-slip-${employeeId}-${month}-${year}.pdf`);
+
+            // Send PDF
+            res.send(pdf);
+        } catch (pdfError) {
+            console.error('Error generating PDF:', pdfError);
+            return res.status(500).json({ error: 'Failed to generate PDF: ' + pdfError.message });
+        }
+    } catch (error) {
+        console.error('Error generating salary slip:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export { 
+    addExpence, 
+    displayAllExpence, 
+    displaySingleExpence, 
+    deleteSingleExpence, 
+    updateExpence, 
+    loginAdmin, 
+    logoutAdmin, 
+    AdminCheckAuth, 
+    billUser, 
+    getEmployeeAttendance, 
+    updateEmployeeBasicSalary, 
+    addEmployeeSalary,
+    generateSalarySlip 
+}
