@@ -64,7 +64,7 @@ const EmployeeSalary = () => {
     
     try {
       const response = await axios.put(
-        `${API_URL}/api/admin/employee/${id}/salary`,
+        `${API_URL}/api/admin/update-salary/${id}`,
         formData,
         { withCredentials: true }
       );
@@ -89,7 +89,7 @@ const EmployeeSalary = () => {
     }
     try {
       const response = await axios.get(
-        `${API_URL}/api/admin/attendance/${id}?month=${month}`,
+        `${API_URL}/api/admin/employee-attendance?month=${month}&employeeId=${id}`,
         { withCredentials: true }
       );
       if (response.data.totalHours !== undefined) {
@@ -140,7 +140,7 @@ const EmployeeSalary = () => {
     }
     try {
       const response = await axios.post(
-        `${API_URL}/api/admin/employee/${id}/salary/add`,
+        `${API_URL}/api/admin/add-salary/${id}`,
         {
           month,
           bonuses: bonuses.filter(b => b.description && b.amount),
@@ -157,6 +157,116 @@ const EmployeeSalary = () => {
     } catch (error) {
       toast.error('Error saving salary');
     }
+  };
+
+  const handleDownloadSalarySlip = async (employeeId, month, year) => {
+    try {
+        console.log('Downloading salary slip with data:', { employeeId, month, year });
+
+        // Validate date
+        const selectedDate = new Date(year, month - 1);
+        const currentDate = new Date();
+        if (selectedDate > currentDate) {
+            toast.error('Cannot generate salary slip for future date');
+            return;
+        }
+
+        // Validate required data
+        if (!employeeId || !month || !year) {
+            toast.error('Missing required data for salary slip generation');
+            return;
+        }
+
+        // Validate salary data
+        if (!salaryResult) {
+            toast.error('Please calculate salary first');
+            return;
+        }
+
+        // Format month to ensure it's two digits
+        const formattedMonth = month.toString().padStart(2, '0');
+        console.log('Formatted month:', formattedMonth);
+
+        // Prepare salary data
+        const salaryData = {
+            month: formattedMonth,
+            year,
+            basicSalary: salaryResult.baseSalary,
+            allowances: salaryResult.totalBonuses,
+            overtime: 0, // Add if you have overtime calculation
+            deductions: salaryResult.totalDeductions,
+            netSalary: salaryResult.finalSalary,
+            totalHours: salaryResult.totalHours,
+            totalDays: salaryResult.totalDays
+        };
+
+        console.log('Sending salary data:', salaryData);
+
+        const response = await axios.get(
+            `${API_URL}/api/admin/salary-slip/${employeeId}`,
+            {
+                params: salaryData,
+                responseType: 'blob',
+                withCredentials: true
+            }
+        );
+
+        console.log('Response received:', response);
+
+        // Check if the response is actually a PDF
+        if (response.data.type !== 'application/pdf') {
+            // Try to read the error message from the blob
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const errorData = JSON.parse(reader.result);
+                    toast.error(errorData.error || 'Failed to generate salary slip');
+                } catch (e) {
+                    toast.error('Failed to generate salary slip');
+                }
+            };
+            reader.readAsText(response.data);
+            return;
+        }
+
+        // Create blob and download
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `salary-slip-${employeeId}-${formattedMonth}-${year}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+
+        toast.success('Salary slip downloaded successfully');
+    } catch (error) {
+        console.error('Error downloading salary slip:', error);
+        if (error.response?.data) {
+            // Try to read the error message from the blob
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const errorData = JSON.parse(reader.result);
+                    toast.error(errorData.error || 'Failed to generate salary slip');
+                } catch (e) {
+                    toast.error('Failed to generate salary slip');
+                }
+            };
+            reader.readAsText(error.response.data);
+        } else {
+            toast.error('Failed to generate salary slip');
+        }
+    }
+};
+
+  // Add this function to get max month value
+  const getMaxMonth = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    return `${year}-${month.toString().padStart(2, '0')}`;
   };
 
   if (loading) {
@@ -228,6 +338,7 @@ const EmployeeSalary = () => {
           </form>
         )}
       </div>
+
       <div className="mt-8 p-6 bg-gray-50 rounded-lg shadow">
         <h2 className="text-xl font-bold mb-4">Calculate & Add Salary</h2>
         <form onSubmit={handleFetchAttendance} className="space-y-4">
@@ -237,9 +348,13 @@ const EmployeeSalary = () => {
               type="month"
               value={month}
               onChange={e => setMonth(e.target.value)}
+              max={getMaxMonth()}
               className="border p-2 rounded w-full"
               required
             />
+            <p className="text-sm text-gray-500 mt-1">
+              Select a month up to the current month
+            </p>
           </div>
           <button
             type="submit"
@@ -248,97 +363,149 @@ const EmployeeSalary = () => {
             Fetch Attendance
           </button>
         </form>
+
         {attendanceFetched && (
-          <div className="my-4">
-            <p><b>Total Days:</b> {attendance.totalDays}</p>
-            <p><b>Total Hours:</b> {attendance.totalHours}</p>
-            <form onSubmit={handleCalculateSalary} className="space-y-4 mt-4">
-              <div>
-                <label className="block mb-1">Bonuses</label>
-                {bonuses.map((b, i) => (
-                  <div key={i} className="flex gap-2 mb-2">
-                    <input
-                      type="text"
-                      placeholder="Description"
-                      value={b.description}
-                      onChange={e => {
-                        const arr = [...bonuses];
-                        arr[i].description = e.target.value;
-                        setBonuses(arr);
-                      }}
-                      className="border p-2 rounded flex-1"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Amount"
-                      value={b.amount}
-                      onChange={e => {
-                        const arr = [...bonuses];
-                        arr[i].amount = parseFloat(e.target.value) || 0;
-                        setBonuses(arr);
-                      }}
-                      className="border p-2 rounded w-24"
-                    />
-                    <button type="button" onClick={() => setBonuses(bonuses.filter((_, idx) => idx !== i))}>🗑️</button>
-                  </div>
-                ))}
-                <button type="button" onClick={() => setBonuses([...bonuses, { description: '', amount: 0 }])}>Add Bonus</button>
-              </div>
-              <div>
-                <label className="block mb-1">Deductions</label>
-                {deductions.map((d, i) => (
-                  <div key={i} className="flex gap-2 mb-2">
-                    <input
-                      type="text"
-                      placeholder="Description"
-                      value={d.description}
-                      onChange={e => {
-                        const arr = [...deductions];
-                        arr[i].description = e.target.value;
-                        setDeductions(arr);
-                      }}
-                      className="border p-2 rounded flex-1"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Amount"
-                      value={d.amount}
-                      onChange={e => {
-                        const arr = [...deductions];
-                        arr[i].amount = parseFloat(e.target.value) || 0;
-                        setDeductions(arr);
-                      }}
-                      className="border p-2 rounded w-24"
-                    />
-                    <button type="button" onClick={() => setDeductions(deductions.filter((_, idx) => idx !== i))}>🗑️</button>
-                  </div>
-                ))}
-                <button type="button" onClick={() => setDeductions([...deductions, { description: '', amount: 0 }])}>Add Deduction</button>
-              </div>
-              <button
-                type="submit"
-                className="bg-green-600 text-white px-4 py-2 rounded"
-              >
-                Calculate Salary
-              </button>
-            </form>
+          <div className="mt-4">
+            <h3 className="font-bold mb-2">Attendance Summary</h3>
+            <p>Total Days: {attendance.totalDays}</p>
+            <p>Total Hours: {attendance.totalHours}</p>
           </div>
         )}
-        {salaryResult && (
-          <div className="mt-6 p-4 bg-white rounded shadow">
-            <h3 className="font-bold mb-2">Salary Summary for {month}</h3>
-            <p>Total Days: {salaryResult.totalDays}</p>
-            <p>Total Hours: {salaryResult.totalHours}</p>
-            <p>Base Salary: {salaryResult.baseSalary}</p>
-            <p>Bonuses: {salaryResult.totalBonuses}</p>
-            <p>Deductions: {salaryResult.totalDeductions}</p>
-            <p className="font-bold text-lg">Final Salary: {salaryResult.finalSalary}</p>
+
+        {attendanceFetched && (
+          <div className="mt-4">
+            <h3 className="font-bold mb-2">Bonuses</h3>
+            {bonuses.map((bonus, index) => (
+              <div key={index} className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  placeholder="Description"
+                  value={bonus.description}
+                  onChange={e => {
+                    const newBonuses = [...bonuses];
+                    newBonuses[index].description = e.target.value;
+                    setBonuses(newBonuses);
+                  }}
+                  className="border p-2 rounded flex-1"
+                />
+                <input
+                  type="number"
+                  placeholder="Amount"
+                  value={bonus.amount}
+                  onChange={e => {
+                    const newBonuses = [...bonuses];
+                    newBonuses[index].amount = parseFloat(e.target.value) || 0;
+                    setBonuses(newBonuses);
+                  }}
+                  className="border p-2 rounded w-32"
+                />
+              </div>
+            ))}
             <button
-              className="mt-4 bg-primary text-white px-4 py-2 rounded"
-              onClick={handleSaveSalary}
+              onClick={() => setBonuses([...bonuses, { description: '', amount: 0 }])}
+              className="text-blue-600 hover:text-blue-800"
             >
-              Save Salary to DB
+              + Add Bonus
             </button>
+          </div>
+        )}
+
+        {attendanceFetched && (
+          <div className="mt-4">
+            <h3 className="font-bold mb-2">Deductions</h3>
+            {deductions.map((deduction, index) => (
+              <div key={index} className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  placeholder="Description"
+                  value={deduction.description}
+                  onChange={e => {
+                    const newDeductions = [...deductions];
+                    newDeductions[index].description = e.target.value;
+                    setDeductions(newDeductions);
+                  }}
+                  className="border p-2 rounded flex-1"
+                />
+                <input
+                  type="number"
+                  placeholder="Amount"
+                  value={deduction.amount}
+                  onChange={e => {
+                    const newDeductions = [...deductions];
+                    newDeductions[index].amount = parseFloat(e.target.value) || 0;
+                    setDeductions(newDeductions);
+                  }}
+                  className="border p-2 rounded w-32"
+                />
+              </div>
+            ))}
+            <button
+              onClick={() => setDeductions([...deductions, { description: '', amount: 0 }])}
+              className="text-blue-600 hover:text-blue-800"
+            >
+              + Add Deduction
+            </button>
+          </div>
+        )}
+
+        {attendanceFetched && (
+          <div className="mt-4">
+            <button
+              onClick={handleCalculateSalary}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            >
+              Calculate Salary
+            </button>
+          </div>
+        )}
+
+        {salaryResult && (
+          <div className="mt-6 p-6 bg-white rounded-lg shadow">
+            <h2 className="text-xl font-bold mb-4">Salary Calculation Result</h2>
+            <div className="space-y-2">
+              <p>Total Days: {salaryResult.totalDays}</p>
+              <p>Total Hours: {salaryResult.totalHours}</p>
+              <p>Base Salary: ${salaryResult.baseSalary}</p>
+              <p>Total Bonuses: ${salaryResult.totalBonuses}</p>
+              <p>Total Deductions: ${salaryResult.totalDeductions}</p>
+              <p className="font-bold">Final Salary: ${salaryResult.finalSalary}</p>
+            </div>
+            
+            <div className="mt-4 flex gap-4">
+              <button
+                onClick={handleSaveSalary}
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              >
+                Save Salary
+              </button>
+              
+              <button
+                onClick={() => {
+                  if (!month) {
+                    toast.error('Please select a month first');
+                    return;
+                  }
+                  if (!salaryResult) {
+                    toast.error('Please calculate salary first');
+                    return;
+                  }
+                  const [year, monthNum] = month.split('-');
+                  const selectedDate = new Date(year, monthNum - 1);
+                  const currentDate = new Date();
+                  if (selectedDate > currentDate) {
+                    toast.error('Cannot generate salary slip for future date');
+                    return;
+                  }
+                  handleDownloadSalarySlip(id, monthNum, year);
+                }}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+                Download Salary Slip
+              </button>
+            </div>
           </div>
         )}
       </div>

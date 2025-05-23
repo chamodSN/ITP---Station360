@@ -1,42 +1,45 @@
 import axios from "axios"
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate, useLocation } from "react-router-dom";
 
 const AllExpence = () => {
-
-    const [Expence,setExpence] = useState([]);
+    const [Expence, setExpence] = useState([]);
     const navigate = useNavigate();
-
-
+    const location = useLocation();
 
     const getAllExpence = async () => {
-    
-        try{
-            const{data} = await axios.get('http://localhost:4200/api/admin/all-expence');
+        try {
+            const searchParams = new URLSearchParams(location.search);
+            const searchQuery = searchParams.get('search');
+            const url = searchQuery 
+                ? `http://localhost:4200/api/admin/all-expence?search=${encodeURIComponent(searchQuery)}`
+                : 'http://localhost:4200/api/admin/all-expence';
 
-            console.log(data)
-    
-            if(data.success){
-                setExpence(data.AllExpence)
-            }else{
-                 console.log("error fetching data")
+            const { data } = await axios.get(url);
+            if (data.success) {
+                setExpence(data.AllExpence);
+            } else {
+                console.log("error fetching data");
             }
-    
-        }catch(error){
-        console.log(error)
+        } catch (error) {
+            console.log(error);
         }
-    }
+    };
 
-    useEffect(()=>{
-        getAllExpence()
-    }, [])
+    useEffect(() => {
+        getAllExpence();
+    }, [location.search]);
 
-
+    const searchParams = new URLSearchParams(location.search);
+    const searchQuery = searchParams.get('search');
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
-            <h1 className="text-3xl font-bold text-gray-800 mb-6">All Expenses</h1>
+            <h1 className="text-3xl font-bold text-gray-800 mb-6">
+                {searchQuery
+                    ? `Search results for "${searchQuery}"`
+                    : 'All Expenses'}
+            </h1>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-5xl">
                 {Expence.map((item, index) => (
