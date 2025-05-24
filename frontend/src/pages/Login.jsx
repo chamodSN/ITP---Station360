@@ -16,6 +16,19 @@ const Login = () => {
   const onSubmitHandler = async (event) => {
     event.preventDefault();
 
+    if (state === 'Signup') {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(email)) {
+        toast.error("Please enter a valid email address");
+        return;
+      }
+  
+      if (password.length < 8) {
+        toast.error("Password must be at least 9 characters long");
+        return;
+      }
+    }
+
     try {
       if (state === 'Login') {
         await login(email, password);
@@ -23,12 +36,13 @@ const Login = () => {
         navigate("/");
       } else if (state === 'Signup') {
         await signup(email, password, name);
+        toast.success("Signup successful. Please check your email to verify.");
         navigate("/verify-email");
       }
     } catch (error) {
       toast.error(error?.response?.data?.message || "Something went wrong");
     }
-  };
+  }    
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">

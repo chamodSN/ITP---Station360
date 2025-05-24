@@ -3,16 +3,14 @@ import { useAuthStore } from '../store/authStore';
 import { useAppContext } from '../context/AppContext';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-
-const TABS = [
-  { key: 'personal', label: 'Personal Info' },
-  { key: 'vehicles', label: 'My Vehicles' },
-];
+import { assets } from '../assets/assets';
+import axios from 'axios';
 
 const MyProfile = () => {
   const { user, updateProfile, deleteProfile } = useAuthStore();
   const { userVehicles, fetchUserVehicles, loading } = useAppContext();
   const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState('profile');
 
   const [userData, setUserData] = useState({
     name: '',
@@ -24,7 +22,9 @@ const MyProfile = () => {
 
   const [isEdit, setIsEdit] = useState(false);
   const [image, setImage] = useState(null);
-  const [activeTab, setActiveTab] = useState('personal');
+  const [serviceHistory, setServiceHistory] = useState([]);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -39,16 +39,42 @@ const MyProfile = () => {
     }
   }, [user]);
 
+  const isValidPhone = (phone) => {
+    return /^\+?[0-9]{10,15}$/.test(phone);
+  };
+
+  const handleImageUpload = (file) => {
+    const allowedTypes = ['image/jpeg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Only JPG and PNG files are allowed');
+      return;
+    }
+    setImage(file);
+  };
+
   const handleUpdate = async () => {
+    if (!userData.name.trim()) {
+      toast.error("Name is required");
+      return;
+    }
+
+    if (!isValidPhone(userData.phone)) {
+      toast.error("Please enter a valid phone number");
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append('name', userData.name);
       formData.append('phone', userData.phone || '');
       formData.append('gender', userData.gender || '');
+
       if (image) {
         formData.append('image', image);
       }
+
       const result = await updateProfile(formData);
+
       if (result.success) {
         setIsEdit(false);
         setImage(null);
@@ -75,163 +101,292 @@ const MyProfile = () => {
     }
   };
 
-  return (
-    <div className="max-w-4xl mx-auto mt-10 bg-white rounded-xl shadow-lg overflow-hidden">
-      {/* Banner */}
-      <div className="h-32 bg-gradient-to-r from-primary via-blue-400 to-green-400 relative flex items-end justify-center">
-        <div className="absolute -bottom-16 flex flex-col items-center">
-          <label htmlFor="image" className="cursor-pointer group">
-            <div className="relative">
-              <img
-                className="w-40 h-40 rounded-full border-8 border-white object-cover shadow-lg group-hover:opacity-80 transition"
-                src={image ? URL.createObjectURL(image) : userData.image}
-                alt="Profile Preview"
-              />
-              <div className="absolute bottom-2 right-2 bg-primary text-white rounded-full p-2 border-4 border-white">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-7 h-7">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3zm0 0v3a2 2 0 002 2h3" />
-                </svg>
-              </div>
-            </div>
-            <input
-              type="file"
-              id="image"
-              accept="image/*"
-              hidden
-              onChange={(e) => setImage(e.target.files[0])}
-            />
-          </label>
-          <p className="font-bold text-lg mt-2 text-gray-800">{userData.name}</p>
+  const fetchServiceHistory = async (vehicleId) => {
+    try {
+      const response = await axios.get(`http://localhost:4200/api/vehicle-history/${vehicleId}`);
+      if (response.data.success) {
+        setServiceHistory(response.data.data);
+        setShowHistoryModal(true);
+      }
+    } catch (error) {
+      toast.error('Error fetching service history');
+      console.error('Error:', error);
+    }
+  };
+
+  const handleViewHistory = (vehicle) => {
+    setSelectedVehicle(vehicle);
+    fetchServiceHistory(vehicle._id);
+  };
+
+  const ServiceHistoryModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg w-3/4 max-h-[80vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">
+            Service History - {selectedVehicle?.brandName} {selectedVehicle?.modelName}
+          </h2>
+          <button
+            onClick={() => setShowHistoryModal(false)}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
+        {serviceHistory.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="px-4 py-2">Service Name</th>
+                  <th className="px-4 py-2">Technician</th>
+                  <th className="px-4 py-2">Tasks Performed</th>
+                </tr>
+              </thead>
+              <tbody>
+                {serviceHistory.map((service, index) => (
+                  <tr key={index} className="border-b">
+                    <td className="px-4 py-2">{service.serviceName}</td>
+                    <td className="px-4 py-2">{service.mechanicName}</td>
+                    <td className="px-4 py-2">
+                      <ul className="list-disc list-inside">
+                        {service.tasks.map((task, taskIndex) => (
+                          <li key={taskIndex} className="text-sm text-gray-600">{task}</li>
+                        ))}
+                      </ul>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-center text-gray-500 py-4">No service history found</p>
+        )}
       </div>
-      <div className="mt-16 px-6 pb-8">
-        {/* Tabs */}
-        <div className="flex justify-center border-b border-gray-200 mb-8 gap-2">
-          {TABS.map(tab => (
-            <button
-              key={tab.key}
-              className={`px-6 py-2 font-semibold text-lg focus:outline-none transition-colors duration-200 ${activeTab === tab.key ? 'border-b-4 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
-              onClick={() => setActiveTab(tab.key)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-        {/* Tab Content */}
-        {activeTab === 'personal' && (
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-gray-50 rounded-lg shadow p-10">
-              {isEdit ? (
-                <input
-                  className="bg-white text-3xl font-medium max-w-lg mt-4 border-b-2 border-primary focus:outline-none px-4 py-2"
-                  type="text"
-                  value={userData.name}
-                  onChange={(e) => setUserData(prev => ({ ...prev, name: e.target.value }))}
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="flex">
+        <div className="w-64 min-h-screen bg-white shadow-lg">
+          <div className="p-6">
+            <div className="flex flex-col items-center">
+              <div className="relative w-32 h-32 mb-4">
+                <img
+                  src={image ? URL.createObjectURL(image) : userData.image}
+                  alt="Profile"
+                  className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg"
                 />
-              ) : (
-                <p className="font-medium text-3xl text-neutral-800 mt-4">{userData.name}</p>
-              )}
-              <hr className="my-6 border-zinc-300" />
-              <div>
-                <p className="text-neutral-500 font-semibold mb-4 text-lg">Contact Information</p>
-                <div className="grid grid-cols-[1fr_3fr] gap-y-4 text-neutral-700 text-lg">
-                  <p className="font-medium">Email:</p>
-                  <p className="text-blue-500">{userData.email}</p>
-                  <p className="font-medium">Phone:</p>
+                {isEdit && (
+                  <label htmlFor="image" className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full cursor-pointer hover:bg-primary/90">
+                    <img src={assets.upload_icon} alt="Upload" className="w-5 h-5" />
+                    <input
+                      type="file"
+                      id="image"
+                      accept="image/png, image/jpeg"
+                      hidden
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) handleImageUpload(file);
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
+              <h2 className="text-xl font-semibold text-gray-800">{userData.name}</h2>
+            </div>
+
+            <div className="mt-8 space-y-2">
+              <button
+                onClick={() => setActiveSection('profile')}
+                className={`w-full text-left px-4 py-3 rounded-lg transition-all ${activeSection === 'profile' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              >
+                Profile Information
+              </button>
+              <button
+                onClick={() => setActiveSection('vehicles')}
+                className={`w-full text-left px-4 py-3 rounded-lg transition-all ${activeSection === 'vehicles' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              >
+                My Vehicles
+              </button>
+            </div>
+
+            <div className="mt-8 space-y-2">
+              <button
+                onClick={() => {
+                  if (isEdit) {
+                    handleUpdate();
+                  } else {
+                    setIsEdit(true);
+                  }
+                }}
+                className="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all"
+              >
+                {isEdit ? 'Save Changes' : 'Edit Profile'}
+              </button>
+              <button
+                onClick={handleDelete}
+                className="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all"
+              >
+                Delete Profile
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 p-8">
+          {activeSection === 'profile' ? (
+            <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
+              <h3 className="text-2xl font-semibold text-gray-800 mb-6">Profile Information</h3>
+              <div className="space-y-6">
+                <div className="flex flex-col items-center mb-8">
+                  <div className="relative w-40 h-40 mb-4">
+                    <img
+                      src={image ? URL.createObjectURL(image) : userData.image}
+                      alt="Profile"
+                      className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg"
+                    />
+                    {isEdit && (
+                      <label htmlFor="profile-image" className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full cursor-pointer hover:bg-primary/90">
+                        <img src={assets.upload_icon} alt="Upload" className="w-5 h-5" />
+                        <input
+                          type="file"
+                          id="profile-image"
+                          accept="image/png, image/jpeg"
+                          hidden
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) handleImageUpload(file);
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                  <h2 className="text-xl font-semibold text-gray-800">{userData.name}</h2>
+                  <p className="text-sm text-gray-500">{userData.email}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-600">Full Name</label>
                   {isEdit ? (
                     <input
-                      className="bg-white border-b-2 border-primary max-w-md focus:outline-none px-4 py-2 text-lg"
+                      type="text"
+                      value={userData.name}
+                      onChange={(e) => setUserData(prev => ({ ...prev, name: e.target.value }))}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+                    />
+                  ) : (
+                    <p className="mt-1 text-gray-800">{userData.name}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-600">Email</label>
+                  <p className="mt-1 text-gray-800">{userData.email}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-600">Phone</label>
+                  {isEdit ? (
+                    <input
                       type="text"
                       value={userData.phone}
                       onChange={(e) => setUserData(prev => ({ ...prev, phone: e.target.value }))}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                     />
                   ) : (
-                    <p className="text-blue-400">{userData.phone}</p>
+                    <p className="mt-1 text-gray-800">{userData.phone || 'Not provided'}</p>
                   )}
                 </div>
-              </div>
-              <div className="mt-8">
-                <p className="text-neutral-500 font-semibold mb-4 text-lg">Basic Information</p>
-                <div className="grid grid-cols-[1fr_3fr] gap-y-4 text-lg">
-                  <p className="font-medium">Gender:</p>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-600">Gender</label>
                   {isEdit ? (
                     <select
-                      className="max-w-40 bg-white border-b-2 border-primary focus:outline-none px-4 py-2 text-lg"
                       value={userData.gender}
                       onChange={(e) => setUserData(prev => ({ ...prev, gender: e.target.value }))}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                     >
                       <option value="Male">Male</option>
                       <option value="Female">Female</option>
                       <option value="Not selected">Not selected</option>
                     </select>
                   ) : (
-                    <p className="text-gray-400">{userData.gender}</p>
+                    <p className="mt-1 text-gray-800">{userData.gender}</p>
                   )}
                 </div>
               </div>
-              <div className="mt-12 flex gap-6">
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-semibold text-gray-800">My Vehicles</h3>
                 <button
-                  className="border border-primary text-primary px-12 py-3 rounded-full text-lg hover:text-white hover:bg-primary transition-all font-semibold"
-                  onClick={() => {
-                    if (isEdit) {
-                      handleUpdate();
-                    } else {
-                      setIsEdit(true);
-                    }
-                  }}
+                  onClick={() => navigate('/add-vehicle')}
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all"
                 >
-                  {isEdit ? 'Save' : 'Edit'}
-                </button>
-                <button
-                  className="border border-red-500 text-red-500 px-12 py-3 rounded-full text-lg hover:text-white hover:bg-red-500 transition-all font-semibold"
-                  onClick={handleDelete}
-                >
-                  Delete Profile
+                  Add Vehicle
                 </button>
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {loading ? (
+                  <p className="text-gray-600">Loading vehicles...</p>
+                ) : userVehicles.length === 0 ? (
+                  <p className="text-gray-600">No vehicles added yet</p>
+                ) : (
+                  userVehicles.map((vehicle) => (
+                    <div
+                      key={vehicle._id}
+                      className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-all cursor-pointer"
+                      onClick={() => navigate(`/vehicle/${vehicle._id}`)}
+                    >
+                      <div className="aspect-w-16 aspect-h-9">
+                        <img
+                          src={vehicle.Image}
+                          alt={vehicle.brandName}
+                          className="w-full h-48 object-cover"
+                        />
+                      </div>
+                      <div className="p-4">
+                        <h4 className="font-medium text-gray-800 text-lg mb-2">
+                          {vehicle.brandName} {vehicle.modelName}
+                        </h4>
+                        <div className="space-y-1">
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium">Plate:</span> {vehicle.plateNumber}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium">Fuel:</span> {vehicle.fuelType}
+                          </p>
+                        </div>
+                        <div className="mt-4 flex justify-end">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewHistory(vehicle);
+                            }}
+                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                          >
+                            View Service History
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-          </div>
-        )}
-        {activeTab === 'vehicles' && (
-          <div className="max-w-3xl mx-auto">
-            <div className="flex justify-between items-center mb-10">
-              <h2 className="text-2xl font-bold text-gray-800">My Vehicles</h2>
-              <button
-                onClick={() => navigate('/add-vehicle')}
-                className="bg-primary text-white px-8 py-3 rounded text-lg hover:bg-primary/90 transition-all font-semibold shadow"
-              >
-                Add Vehicle
-              </button>
-            </div>
-            <div className="space-y-6">
-              {loading ? (
-                <p className="text-lg">Loading vehicles...</p>
-              ) : userVehicles.length === 0 ? (
-                <p className="text-gray-500 text-lg">No vehicles added yet</p>
-              ) : (
-                userVehicles.map((vehicle) => (
-                  <div
-                    key={vehicle._id}
-                    className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-all border border-gray-100 hover:border-primary"
-                    onClick={() => navigate(`/vehicle/${vehicle._id}`)}
-                  >
-                    <img
-                      src={vehicle.Image}
-                      alt={vehicle.brandName}
-                      className="w-full h-56 object-cover rounded-lg mb-6"
-                    />
-                    <h3 className="font-semibold text-2xl text-primary">{vehicle.brandName} {vehicle.modelName}</h3>
-                    <p className="text-gray-600 text-lg">Plate: {vehicle.plateNumber}</p>
-                    <p className="text-gray-600 text-lg">Fuel: {vehicle.fuelType}</p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+      {showHistoryModal && <ServiceHistoryModal />}
     </div>
   );
 };
 
-export default MyProfile; 
+export default MyProfile;

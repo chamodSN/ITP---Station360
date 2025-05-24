@@ -76,7 +76,6 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path="/notifications/:audience" element={<UserNotifications />} />
-        <Route path="/login" element={<Login />} />
       </Routes>
       <Footer />
     </div>

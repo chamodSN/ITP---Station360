@@ -120,37 +120,6 @@ export const WELCOME_EMAIL_TEMPLATE = `
 </html>
 `;
 
-export const TWO_FACTOR_SETUP_TEMPLATE = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Set Up Two-Factor Authentication</title>
-</head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: linear-gradient(to right, #2196F3, #0b7dda); padding: 20px; text-align: center;">
-    <h1 style="color: white; margin: 0;">Set Up Two-Factor Authentication</h1>
-  </div>
-  <div style="background-color: #f9f9f9; padding: 20px; border-radius: 0 0 5px 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-    <p>Hello {name},</p>
-    <p>You've requested to enable Two-Factor Authentication (2FA) for your Station360 account.</p>
-    <p>To complete the setup, enter this secret key in your authenticator app:</p>
-    <div style="text-align: center; margin: 20px 0; padding: 10px; background-color: #f0f0f0; border-radius: 5px;">
-      <code style="font-family: monospace; font-size: 14px;">{secret}</code>
-    </div>
-    <p>After entering the secret key, enter the 6-digit code from your authenticator app to complete the setup.</p>
-    <p>For security reasons, this secret key will only be valid for a limited time.</p>
-    <p>If you didn't request this setup, please contact our support team immediately.</p>
-    <p>Best regards,<br>The Station360 Team</p>
-  </div>
-  <div style="text-align: center; margin-top: 20px; color: #888; font-size: 0.8em;">
-    <p>This is an automated message, please do not reply to this email.</p>
-  </div>
-</body>
-</html>
-`;
-
 export const EMPLOYEE_WELCOME_EMAIL_TEMPLATE = `
 <!DOCTYPE html>
 <html lang="en">

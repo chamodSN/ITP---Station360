@@ -23,19 +23,20 @@ const User = () => {
     };
 
     const deleteUser = async () => {
-        try {
-            const { data } = await axios.delete(`http://localhost:4200/api/user/delete/${id}`, {
-                withCredentials: true,
-            });
-            if (data.success) {
+        if (window.confirm("Are you sure you want to delete this user?")) {
+            try {
+                await axios.delete(`http://localhost:4200/api/user/delete-profile-by-admin/${id}`, {
+                    withCredentials: true,
+                });
                 toast.success("User deleted successfully!");
                 navigate('/users');
+            } catch (error) {
+                console.error("Error deleting user:", error);
+                toast.error("Failed to delete user!");
             }
-        } catch (error) {
-            console.error("Error deleting user:", error.message);
-            toast.error("Failed to delete user!");
         }
-    };
+    };    
+    
 
     useEffect(() => {
         fetchUser();
@@ -46,14 +47,12 @@ const User = () => {
             <div className="flex w-full max-w-4xl bg-white rounded-lg shadow-lg overflow-hidden">
                 {/* Left column */}
                 <div className="flex flex-col items-center justify-center bg-[#5F6FFF] w-1/2 py-12 px-8">
-                    <span className="text-gray-300 text-sm mb-4">#{user._id?.slice(-3)}</span>
                     <img
                         className="w-48 h-56 object-cover rounded shadow mb-8"
                         src={user.image}
                         alt={user.name}
                     />
                     <div className="text-3xl font-serif text-gray-800 mb-2">{user.name}</div>
-                    <div className="text-gray-600">{user.location || "Los Angeles, CA"}</div>
                 </div>
                 {/* Right column */}
                 <div className="flex-1 flex flex-col justify-center px-10 py-12 bg-white">
@@ -75,10 +74,9 @@ const User = () => {
                     <div className="flex items-center justify-end">
                         <button
                             onClick={deleteUser}
-                            className="text-[#5F6FFF] font-serif text-lg flex items-center gap-2 hover:underline"
+                            className="text-[#f22c2c] font-serif text-lg flex items-center gap-2 hover:underline"
                         >
-                            Delete
-                            
+                Delete
                         </button>
                     </div>
                 </div>
@@ -87,4 +85,4 @@ const User = () => {
     );
 };
 
-export default User; 
+export default User;
