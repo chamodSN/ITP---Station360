@@ -48,15 +48,28 @@ const addvehicle = async (req, res) => {
 
 const getAllVehicles = async (req, res) => {
     try {
+        const search = req.query.search || '';
+        const regex = new RegExp(search, 'i'); // case-insensitive search
 
-        const allVehicles = await vehicleModel.find();
+        const vehicles = await vehicleModel.find({
+            $or: [
+                { fuelType: { $regex: regex } },
+                { brandName: { $regex: regex } },
+                { modelName: { $regex: regex } },
+                { plateNumber: { $regex: regex } },
+                { vinNumber: { $regex: regex } }
+            ]
+        });
 
-        return res.json({ success: true, allVehicles })
+        if (vehicles.length === 0) {
+            return res.json({ success: false, message: 'No matching vehicles found' });
+        }
 
+        return res.json({ success: true, vehicles });
     } catch (error) {
-        return res.json({ success: false, message: error.message })
+        return res.json({ success: false, message: error.message });
     }
-}
+};
 
 const getVehicle = async (req, res) => {
     try {
@@ -230,16 +243,16 @@ const deleteProfile = async (req, res) => {
 const deleteProfileByAdmin = async (req, res) => {
     try {
         const userId = req.params.id;
-        // Assuming you're using Mongoose or similar
+
         const deletedUser = await User.findByIdAndDelete(userId);
 
         if (!deletedUser) {
-            return res.status(404).json({ message: "User not found" });
+            return res.status(404).json({ success: false, message: "User not found" });
         }
-
-        res.status(200).json({ message: "User deleted successfully" });
+        
+        return res.status(200).json({ success: true, message: "User deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Error deleting user", error });
+        return res.status(500).json({ success: false, message: "Error deleting user", error });
     }
 };
 
@@ -306,29 +319,66 @@ const allUsers = async (req, res) => {
 };
 
 const generateUserReport = async (req, res) => {
-    const { startDate, endDate } = req.body;
-    console.log("Received dates:", startDate, endDate);
-
     try {
-        const users = await User.find({
-            createdAt: {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate),
-            },
-        });
+        const { startDate, endDate } = req.query;
 
-        if (!users.length) {
-            return res.status(404).json({ message: 'No users found for the given date range' });
+        if (!startDate || !endDate) {
+            return res.status(400).json({ error: 'Start date and end date are required' });
         }
 
-        const pdfStream = await generateUserReportPDF(users, startDate, endDate);
+        // Convert dates to Date objects
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // Set to end of day
 
+        // Validate dates
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            return res.status(400).json({ error: 'Invalid date format' });
+        }
+
+        // Find users registered within the date range
+        const users = await User.find({
+            createdAt: {
+                $gte: start,
+                $lte: end
+            }
+        }).select('name email phone createdAt lastlogin');
+
+        if (!users || users.length === 0) {
+            return res.status(404).json({ error: 'No users found in the specified date range' });
+        }
+
+        // Prepare data for PDF generation
+        const pdfData = {
+            users: users.map(user => ({
+                name: user.name || 'N/A',
+                email: user.email || 'N/A',
+                phone: user.phone || 'N/A',
+                registeredOn: user.createdAt ? new Date(user.createdAt).toLocaleString() : 'N/A',
+                lastLogin: user.lastlogin ? new Date(user.lastlogin).toLocaleString() : 'Never'
+            })),
+            startDate: start.toLocaleDateString(),
+            endDate: end.toLocaleDateString(),
+            generatedDate: new Date().toLocaleString(),
+            currentYear: new Date().getFullYear()
+        };
+
+        // Generate PDF
+        const pdf = await generateUserReportPDF(pdfData);
+        
+        if (!pdf) {
+            throw new Error('Failed to generate PDF');
+        }
+
+        // Set response headers
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'attachment; filename=user_report.pdf');
-        pdfStream.pipe(res);
-    } catch (err) {
-        console.error('Server error:', err);
-        res.status(500).json({ message: 'Server error', error: err.message });
+        res.setHeader('Content-Disposition', `attachment; filename=user-report-${startDate}-to-${endDate}.pdf`);
+
+        // Send PDF
+        res.send(pdf);
+    } catch (error) {
+        console.error('Error generating user report:', error);
+        res.status(500).json({ error: error.message });
     }
 };
 

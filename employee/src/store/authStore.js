@@ -37,9 +37,19 @@ export const useEmployeeAuthStore = create((set, get) => ({
         set({ isLoading: true, error: null });
         try {
             await axios.post(`${API_URL}/logout`);
-            set({ employee: null, isAuthenticated: false, error: null, isLoading: false, isCheckingAuth: false });
+            set({ 
+                employee: null, 
+                isAuthenticated: false, 
+                error: null, 
+                isLoading: false, 
+                isCheckingAuth: false 
+            });
         } catch (error) {
-            set({ error: "Error logging out", isLoading: false, isCheckingAuth: false });
+            set({ 
+                error: "Error logging out", 
+                isLoading: false, 
+                isCheckingAuth: false 
+            });
             throw error;
         }
     },
@@ -48,16 +58,28 @@ export const useEmployeeAuthStore = create((set, get) => ({
         set({ isCheckingAuth: true, error: null });
         try {
             const response = await axios.get(`${API_URL}/check-auth`);
-            set({ 
-                employee: response.data.employee, 
-                isAuthenticated: true, 
-                isCheckingAuth: false 
-            });
+            if (response.data.success) {
+                set({ 
+                    employee: response.data.employee, 
+                    isAuthenticated: true, 
+                    isCheckingAuth: false,
+                    error: null
+                });
+            } else {
+                set({ 
+                    employee: null,
+                    isAuthenticated: false, 
+                    isCheckingAuth: false,
+                    error: response.data.message
+                });
+            }
         } catch (error) {
+            console.error("Auth check error:", error);
             set({ 
-                error: null, 
-                isCheckingAuth: false, 
-                isAuthenticated: false 
+                employee: null,
+                isAuthenticated: false, 
+                isCheckingAuth: false,
+                error: error.response?.data?.message || "Authentication failed"
             });
         }
     },

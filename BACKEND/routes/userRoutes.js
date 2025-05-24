@@ -22,7 +22,7 @@ userRoute.get('/my-vehicles', authUser, getMyVehicles);
 userRoute.get('/user-profiles', authAdmin, allUsers);
 userRoute.delete('/delete-profile-by-admin/:id', authAdmin, deleteProfileByAdmin);
 userRoute.get('/get-profile-by-admin/:id', authAdmin, getProfileByAdmin);
-userRoute.post('/user-report', authAdmin, generateUserReport);
+userRoute.get('/report', authAdmin, generateUserReport);
 
 //Admin Vehicle Routes
 userRoute.get('/all-vehicles', authAdmin, getAllVehicles);
