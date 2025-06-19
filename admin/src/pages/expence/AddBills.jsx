@@ -31,18 +31,17 @@ const AddBills = () => {
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-2xl font-bold mb-6">Completed Bookings</h1>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {bookings.map((booking) => (
                     <div key={booking._id} className="bg-white p-6 rounded-lg shadow">
                         <div className="mb-4">
-                        <p className="text-gray-600">Service: {booking.serviceId.serviceName}</p>
+                            <p className="text-gray-600">Service: {booking.serviceId.serviceName}</p>
                             <p className="text-gray-600">Date: {booking.date}</p>
                             <p className="text-gray-600">Time: {booking.timeSlot}</p>
-                            <p className="text-gray-600">Vehicle Plate: {booking.vehicleId.plateNumber}</p>
                             <p className="text-gray-600">Technician: {booking.technicianId?.name || 'N/A'}</p>
                         </div>
-                        
+
                         <div className="mb-4">
                             <h3 className="font-medium mb-2">Tasks Performed:</h3>
                             <ul className="list-disc list-inside">

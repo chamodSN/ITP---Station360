@@ -67,7 +67,7 @@ const BookingDetails = () => {
     const handleBillUser = async () => {
         try {
             // Validate all expenses
-            const invalidExpenses = extraExpenses.some(expense => 
+            const invalidExpenses = extraExpenses.some(expense =>
                 !expense.description || !expense.amount || isNaN(expense.amount)
             );
 
@@ -100,11 +100,11 @@ const BookingDetails = () => {
                 extraExpenses: newExpenses
             });
 
-            
+
 
 
             toast.success('User has been billed successfully');
-            navigate('/admin/expense');
+            navigate('/add-bills');
         } catch (error) {
             console.error('Error billing user:', error);
             toast.error('Failed to bill user');
@@ -126,7 +126,7 @@ const BookingDetails = () => {
         <div className="container mx-auto px-4 py-8">
             <div className="mb-6">
                 <button
-                    onClick={() => navigate('/admin/expense')}
+                    onClick={() => navigate('/add-bills')}
                     className="text-blue-500 hover:text-blue-700"
                 >
                     ← Back to Bookings
@@ -135,13 +135,13 @@ const BookingDetails = () => {
 
             <div className="bg-white p-6 rounded-lg shadow">
                 <h1 className="text-2xl font-bold mb-6">Booking Details</h1>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <div>
                         <h2 className="text-xl font-semibold mb-4">Booking Information</h2>
                         <p className="mb-2"><span className="font-medium">Date:</span> {booking.date}</p>
                         <p className="mb-2"><span className="font-medium">Time:</span> {booking.timeSlot}</p>
-                        <p className="mb-2"><span className="font-medium">Vehicle Plate:</span> {booking.vehicleId.vehicleNumPlate}</p>
+                        <p className="mb-2"><span className="font-medium">Vehicle Plate:</span> {booking.vehicleId?.vehicleNumPlate || 'N/A'}</p>
                         <p className="mb-2"><span className="font-medium">Technician:</span> {booking.technicianId?.name || 'N/A'}</p>
                     </div>
 
@@ -186,7 +186,7 @@ const BookingDetails = () => {
                                 <p className="text-green-600">Amount: ${expense.amount}</p>
                             </div>
                         ))}
-                        
+
                         <div className="border p-4 rounded">
                             <h3 className="font-medium mb-4">Add New Expenses</h3>
                             <div className="space-y-4">
@@ -232,11 +232,10 @@ const BookingDetails = () => {
                     <button
                         onClick={handleBillUser}
                         disabled={!allTasksPriced}
-                        className={`w-full py-3 px-4 rounded text-white font-medium ${
-                            allTasksPriced 
-                                ? 'bg-green-500 hover:bg-green-600' 
-                                : 'bg-gray-400 cursor-not-allowed'
-                        }`}
+                        className={`w-full py-3 px-4 rounded text-white font-medium ${allTasksPriced
+                            ? 'bg-green-500 hover:bg-green-600'
+                            : 'bg-gray-400 cursor-not-allowed'
+                            }`}
                     >
                         {allTasksPriced ? 'Bill User' : 'Add Prices to All Tasks First'}
                     </button>
