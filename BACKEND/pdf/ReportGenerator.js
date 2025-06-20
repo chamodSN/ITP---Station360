@@ -27,12 +27,16 @@ export const generateDailyAppointmentsPDF = async (appointments, date) => {
         const generatedDate = now.toLocaleDateString();
         const currentYear = now.getFullYear();
 
-        // Replace template placeholders
-        let html = DAILY_APPOINTMENTS_TEMPLATE
-            .replace('{date}', date)
-            .replace('{appointments}', formattedAppointments)
-            .replace('{generatedDate}', generatedDate)
-            .replace('{currentYear}', currentYear);
+        // Create data object for the template
+        const templateData = {
+            date: date,
+            appointments: formattedAppointments,
+            generatedDate: generatedDate,
+            currentYear: currentYear
+        };
+
+        // Generate HTML using the template function
+        const html = DAILY_APPOINTMENTS_TEMPLATE(templateData);
 
         console.log("Final HTML template:", html);
 
@@ -44,12 +48,6 @@ export const generateDailyAppointmentsPDF = async (appointments, date) => {
                 right: '0.5in',
                 bottom: '0.5in',
                 left: '0.5in'
-            },
-            header: {
-                height: '0.5in'
-            },
-            footer: {
-                height: '0.5in'
             }
         };
 
@@ -60,7 +58,7 @@ export const generateDailyAppointmentsPDF = async (appointments, date) => {
                     console.error("PDF generation error:", err);
                     reject(err);
                 } else {
-                    console.log("PDF generated successfully");
+                    console.log("Daily appointments PDF generated successfully");
                     resolve(buffer);
                 }
             });

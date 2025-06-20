@@ -53,7 +53,7 @@ const BookingSummary = () => {
     useEffect(() => {
         if (bookings && bookings.length > 0) {
             console.log('Bookings data:', bookings);
-            
+
             // Filter bookings based on date range
             const filteredBookings = bookings.filter(booking => {
                 if (!dateRange.start && !dateRange.end) return true;
@@ -66,14 +66,14 @@ const BookingSummary = () => {
             // Get all unique service categories from bookings
             const categories = [...new Set(filteredBookings.map(booking => {
                 console.log('Service category:', booking.serviceId?.category);
-                return booking.serviceId?.category || 'General Maintenance & Inspection';
+                return booking.serviceId?.category || 'Uncategorized';
             }))];
-            
+
             console.log('Unique service categories:', categories);
 
             // Calculate summary statistics
             const totalBookings = filteredBookings.length;
-            
+
             setSummaryStats({
                 totalBookings,
                 averageBookings: totalBookings / (categories.length || 1)
@@ -82,8 +82,8 @@ const BookingSummary = () => {
             // Line chart data
             const groupedData = filteredBookings.reduce((acc, booking) => {
                 const date = new Date(booking.date).toLocaleDateString();
-                const category = booking.serviceId?.category || 'General Maintenance & Inspection';
-                
+                const category = booking.serviceId?.category || 'Uncategorized';
+
                 if (!acc[date]) {
                     acc[date] = {};
                 }
@@ -111,7 +111,7 @@ const BookingSummary = () => {
 
             // Pie chart data
             const categoryCounts = categories.reduce((acc, category) => {
-                acc[category] = filteredBookings.filter(b => (b.serviceId?.category || 'General Maintenance & Inspection') === category).length;
+                acc[category] = filteredBookings.filter(b => (b.serviceId?.category || 'Uncategorized') === category).length;
                 return acc;
             }, {});
 
@@ -119,7 +119,7 @@ const BookingSummary = () => {
                 labels: categories,
                 datasets: [{
                     data: categories.map(category => categoryCounts[category]),
-                    backgroundColor: categories.map((_, index) => 
+                    backgroundColor: categories.map((_, index) =>
                         `hsla(${index * 137.5}, 70%, 50%, 0.7)`)
                 }]
             });

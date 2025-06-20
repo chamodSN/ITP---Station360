@@ -20,7 +20,7 @@ import Login from './pages/Login'
 import MyProfile from './pages/Myprofile';
 import ContactUs from './pages/ContactUs'
 import UserNotifications from './pages/UserNotifications';
-
+import AboutUs from './pages/AboutUs';
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isCheckingAuth } = useAuthStore();
@@ -87,6 +87,8 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/contactus" element={<ContactUs />} />
+        <Route path="/aboutus" element={<AboutUs />} />
+        
       </Routes>
       <Footer />
     </div>

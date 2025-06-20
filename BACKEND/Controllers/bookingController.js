@@ -141,7 +141,7 @@ const getAllBookings = async (req, res) => {
     try {
         const bookings = await bookingModel.find()
             .populate('userId', 'name email phone')
-            .populate('serviceId', 'displayImage serviceName price')
+            .populate('serviceId', 'displayImage serviceName price category')
             .populate('technicianId', 'name email phone')
             .populate('vehicleId', 'plateNumber')
             .sort({ createdAt: -1 });
@@ -296,6 +296,46 @@ const getDailyAppointments = async (req, res) => {
     } catch (error) {
         console.error('Error generating daily appointments PDF:', error);
         res.status(500).json({ message: 'Failed to generate daily appointments PDF' });
+    }
+};
+
+export const getVehicleServiceHistory = async (req, res) => {
+    try {
+        const { vehicleId } = req.params;
+
+        // Find all bookings for the vehicle with status 'done' or 'billed'
+        const serviceHistory = await bookingModel.find({
+            vehicleId: vehicleId,
+            status: { $in: ['done', 'billed'] }
+        })
+        .populate('serviceId', 'serviceName')
+        .populate('technicianId', 'name')
+        .sort({ createdAt: -1 })
+        .select('serviceId technicianId tasksPerformed');
+
+        if (!serviceHistory) {
+            return res.status(404).json({ message: 'No service history found for this vehicle' });
+        }
+
+        // Format the response data
+        const formattedHistory = serviceHistory.map(booking => ({
+            serviceName: booking.serviceId.serviceName,
+            mechanicName: booking.technicianId?.name || 'Not assigned',
+            tasks: booking.tasksPerformed.map(task => task.task)
+        }));
+
+        res.status(200).json({
+            success: true,
+            data: formattedHistory
+        });
+
+    } catch (error) {
+        console.error('Error fetching vehicle service history:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching vehicle service history',
+            error: error.message
+        });
     }
 };
 

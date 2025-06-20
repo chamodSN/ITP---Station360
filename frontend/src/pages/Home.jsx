@@ -1,14 +1,18 @@
 import React from 'react'
-import VehicleServiceFeatures from '../components/VehicleServiceFeatures'
-import VehicleServices from '../components/VehicleServices'
-import VehicleServiceHome from '../components/VehicleServiceHome'
+import ActiveSlider from '../components/ActiveSlideBar/ActiveSlider'
+import FAQSection from '../components/FAQSection'
+import ProcessSection from '../components/ProcessSection'
+import CardFlip from '../components/CardFlip/FlipCardsSection'
+import Header from '../components/Header/Header'
 
 const Home = () => {
   return (
     <div>
-      <VehicleServiceHome />
-      <VehicleServices />
-      <VehicleServiceFeatures />
+      <Header />
+      <ProcessSection />
+      <CardFlip />
+      <ActiveSlider />
+      <FAQSection />
     </div>
   )
 }

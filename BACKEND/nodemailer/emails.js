@@ -73,24 +73,6 @@ export const sendWelcomeEmail = async (email, name) => {
     }
 };
 
-export const send2FAEmail = async (email, name, secret) => {
-    try {
-        const html = TWO_FACTOR_SETUP_TEMPLATE
-            .replace("{name}", name)
-            .replace("{secret}", secret);
-
-        await transporter.sendMail({
-            from: `"${sender.name}" <${sender.email}>`,
-            to: email,
-            subject: "Set Up Two-Factor Authentication",
-            html
-        });
-
-        console.log("2FA setup email sent");
-    } catch (err) {
-        console.error("Error sending 2FA setup email:", err);
-    }
-};
 
 export const sendEmployeeWelcomeEmail = async (email, name, position) => {
     const portalLink = "https://portal.station360.com";

@@ -12,7 +12,13 @@ export const AppProvider = ({ children }) => {
     const getAllServices = async () => {
         try {
             setServicesLoading(true);
-            const { data } = await axios.get('http://localhost:4200/api/admin/service/');
+            const searchParams = new URLSearchParams(window.location.search);
+            const searchQuery = searchParams.get('search');
+            const url = searchQuery 
+                ? `http://localhost:4200/api/admin/service?search=${encodeURIComponent(searchQuery)}`
+                : 'http://localhost:4200/api/admin/service';
+
+            const { data } = await axios.get(url);
             if (data.success) {
                 setServices(data.allServices);
             }

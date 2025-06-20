@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Users, Briefcase, CalendarClock, Package, DollarSign, Bell, Truck, CalendarCheck } from "lucide-react";
+import { Users, Briefcase, CalendarClock, Package, DollarSign, Bell, Truck, CalendarCheck,CheckCircle } from "lucide-react";
 
 // Animation Variants
 const fadeIn = {
@@ -30,6 +30,7 @@ const AdminDashboard = () => {
         { Icon: Bell, title: "Notification Management", description: "Configure alerts, reminders, and automated notifications across various communication channels.", path: "/all-notifications" },
         { Icon: Truck, title: "Vehicle Management", description: "Monitor vehicle fleets, schedule maintenance, track trips, and optimize transportation operations.", path: "/all-vehicles" },
         { Icon: CalendarCheck, title: "Schedule Management", description: "Organize meetings, events, and project timelines efficiently with robust scheduling capabilities.", path: "/tasks/assign" },
+        { Icon: CheckCircle, title: "Attendance Management", description: "Track daily attendance, monitor work hours, and generate attendance reports with ease.", path: "/admin-attendance" }
     ];
 
     return (
