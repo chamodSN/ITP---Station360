@@ -67,54 +67,56 @@ const MyBookings = () => {
             </div>
 
             <div>
-                {bookings.length > 0 ? bookings.map((item, index) => (
-                    <div
-                        className="grid grid-cols-[1fr_2fr_2fr] gap-4 sm:flex sm:gap-6 py-2 border border-blue-200 rounded-xl mb-4"
-                        key={index}
-                    >
-                        <div>
-                            <img
-                                className="w-32 ml-2 bg-indigo-50"
-                                src={item.serviceId.displayImage}
-                                alt={item.serviceId.serviceName}
-                            />
-                        </div>
+                {bookings.filter(item => item.status === "Pending").length > 0 ? bookings
+                    .filter(item => item.status === "Pending")
+                    .map((item, index) => (
+                        <div
+                            className="grid grid-cols-[1fr_2fr_2fr] gap-4 sm:flex sm:gap-6 py-2 border border-blue-200 rounded-xl mb-4"
+                            key={index}
+                        >
+                            <div>
+                                <img
+                                    className="w-32 ml-2 bg-indigo-50"
+                                    src={item.serviceId.displayImage}
+                                    alt={item.serviceId.serviceName}
+                                />
+                            </div>
 
-                        <div className="flex-1 text-zinc-600">
-                            <p className="text-neutral-800 font-semibold">
-                                Vehicle: {item.vehicleId?.plateNumber || "N/A"}
-                            </p>
+                            <div className="flex-1 text-zinc-600">
+                                <p className="text-neutral-800 font-semibold">
+                                    Vehicle: {item.vehicleId?.plateNumber || "N/A"}
+                                </p>
 
-                            <p className="text-neutral-700 font-medium mt-1">
-                                {item.serviceId.serviceName}
-                            </p>
+                                <p className="text-neutral-700 font-medium mt-1">
+                                    {item.serviceId.serviceName}
+                                </p>
 
-                            <p className="text-xs mt-2">
-                                <span className="text-sm text-neutral-700 font-medium">Date & Time:</span> {item.date} | {item.timeSlot}
-                            </p>
-                        </div>
-
-                        <div className="flex items-center justify-center flex-1">
-                            <div className="text-center">
-                                <p className="text-m mt-1">
-                                    <span className="text-m text-neutral-700 font-medium">
-                                        Technician Assigned:
-                                    </span>{" "}
-                                    {item.technicianId ? item.technicianId.name : "No"}
+                                <p className="text-xs mt-2">
+                                    <span className="text-sm text-neutral-700 font-medium">Date & Time:</span> {item.date} | {item.timeSlot}
                                 </p>
                             </div>
-                        </div>
 
-                        <div className="flex flex-col gap-2 justify-center items-center mr-5">
-                            <button
-                                onClick={() => openModal(item._id)}
-                                className="text-sm text-white text-center sm:min-w-48 py-2 border rounded bg-red-500 hover:bg-red-800 transition-all duration-300"
-                            >
-                                Cancel Booking
-                            </button>
+                            <div className="flex items-center justify-center flex-1">
+                                <div className="text-center">
+                                    <p className="text-m mt-1">
+                                        <span className="text-m text-neutral-700 font-medium">
+                                            Technician Assigned:
+                                        </span>{" "}
+                                        {item.technicianId ? item.technicianId.name : "No"}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-2 justify-center items-center mr-5">
+                                <button
+                                    onClick={() => openModal(item._id)}
+                                    className="text-sm text-white text-center sm:min-w-48 py-2 border rounded bg-red-500 hover:bg-red-800 transition-all duration-300"
+                                >
+                                    Cancel Booking
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                )) : (
+                    )) : (
                     <p className="text-center text-gray-600">No bookings found.</p>
                 )}
             </div>

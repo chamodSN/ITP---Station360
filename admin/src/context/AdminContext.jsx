@@ -28,7 +28,7 @@ const AdminContextProvider = (props) => {
     const getAllEmployees = async () => {
         try {
             setLoading(true);
-            const { data } = await axios.get('http://localhost:4200/api/admin/employee/employees', {
+            const { data } = await axios.get('http://localhost:4200/api/admin/employee/all-employees', {
                 withCredentials: true,
             });
             if (data.success) {
