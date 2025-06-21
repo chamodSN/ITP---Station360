@@ -61,8 +61,20 @@ const addService = async (req, res) => {
 
 const displayAllServices = async (req, res) => {
     try {
+        const { search } = req.query;
+        let query = {};
 
-        const allServices = await serviceModel.find().select('-bookedSlots');
+        if (search) {
+            query = {
+                $or: [
+                    { serviceName: { $regex: search, $options: 'i' } },
+                    { category: { $regex: search, $options: 'i' } },
+                    { description: { $regex: search, $options: 'i' } }
+                ]
+            };
+        }
+
+        const allServices = await serviceModel.find(query).select('-bookedSlots');
 
         if (allServices.length === 0) {
             return res.json({ success: false, message: "No services found" })

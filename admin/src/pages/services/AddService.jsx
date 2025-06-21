@@ -18,15 +18,34 @@ const AddService = () => {
 
     const onSubmitHandler = async (e) => {
         e.preventDefault();
-
+    
         try {
-
             if (!displayImage) {
                 return toast.error("Please select a display image");
             }
-
+    
+            // File type validation
+            const allowedTypes = ['image/png', 'image/jpeg'];
+            if (!allowedTypes.includes(displayImage.type)) {
+                return toast.error("Only JPG and PNG image formats are allowed");
+            }
+    
+            // Service name length
+            if (serviceName.length < 3 || serviceName.length > 100) {
+                return toast.error("Service name must be between 3 and 100 characters");
+            }
+    
+            // Description length
+            if (description.length < 10) {
+                return toast.error("Description must be at least 10 characters long");
+            }
+    
+            // Interval minimum check
+            if (interval < 30) {
+                return toast.error("Interval must be at least 30 minutes");
+            }
+    
             const formData = new FormData();
-
             formData.append('serviceName', serviceName);
             formData.append('category', category);
             formData.append('displayImage', displayImage);
@@ -35,19 +54,12 @@ const AddService = () => {
             formData.append('interval', interval);
             formData.append('price', price);
             formData.append('available', available);
-
-            formData.forEach((value, key) => {
-                console.log(`${key}: ${value}`);
-            });
-
-            console.log("Form data being sent:", formData);
-
-            const { data } = await axios.post('http://localhost:4200/api/admin/service/add-service', formData)
-
+    
+            const { data } = await axios.post('http://localhost:4200/api/admin/service/add-service', formData);
+    
             if (data.success) {
-                console.log("Service added successfully");
                 toast.success("Service added successfully");
-
+                // Reset form
                 setServiceName('');
                 setCategory('General Maintenance & Inspection');
                 setDisplayImage('');
@@ -56,17 +68,16 @@ const AddService = () => {
                 setInterval(0);
                 setPrice(0);
                 setAvailable(false);
-
                 navigate("/service/all-services");
-
             } else {
-                console.error("Failed to add service: ", data.message);
-                toast.error(error.message);
+                toast.error(data.message || "Failed to add service");
             }
         } catch (error) {
             console.error(error);
+            toast.error("An error occurred while submitting the form");
         }
     }
+    
 
     return (
         <form onSubmit={onSubmitHandler} encType="multipart/form-data" className="max-w-lg mx-auto p-6">
