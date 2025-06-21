@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { CheckCircle2, Loader2, Tag, List, CheckCircle, ArrowLeft } from 'lucide-react';
+import RelatedServices from '../components/RelatedServices';
 
 const sriLankaHolidays = [
     '2025-01-13', // Duruthu Full Moon Poya Day
@@ -305,6 +306,7 @@ const Service = () => {
                     </div>
                 </motion.div>
             </div>
+            <RelatedServices serviceId={id} category={service.category} />
         </div>
     );
 };
