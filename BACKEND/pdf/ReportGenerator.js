@@ -82,3 +82,78 @@ export const generateUserReportPDF = (users, startDate, endDate) => {
         });
     });
 };
+
+export const generateInventoryStockPDF = async (inventory) => {
+    try {
+        const LOW_STOCK_THRESHOLD = 15; // Default threshold for low stock
+
+        // Calculate summary statistics
+        const totalItems = inventory.length;
+        const totalValue = inventory.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+        const lowStockCount = inventory.filter(item => item.quantity <= LOW_STOCK_THRESHOLD).length;
+
+        // Format inventory items for the template
+        const inventoryItems = inventory.map(item => {
+            const itemTotalValue = (item.quantity || 0) * (item.unitPrice || 0);
+            return `
+                <tr>
+                    <td>${item.name || 'N/A'}</td>
+                    <td>${item.brand || 'N/A'}</td>
+                    <td>${item.itemType || 'N/A'}</td>
+                    <td>${item.quantity || 0}</td>
+                    <td>${item.unitType || 'N/A'}</td>
+                    <td>$${(item.unitPrice || 0).toFixed(2)}</td>
+                    <td>$${itemTotalValue.toFixed(2)}</td>
+                    <td class="${(item.quantity || 0) <= LOW_STOCK_THRESHOLD ? 'low-stock' : ''}">
+                        ${(item.quantity || 0) <= LOW_STOCK_THRESHOLD ? 'Low Stock' : 'In Stock'}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        // Get current date and year for footer
+        const now = new Date();
+        const generatedDate = now.toLocaleDateString();
+        const currentYear = now.getFullYear();
+
+        // Create template data object
+        const templateData = {
+            totalItems: totalItems,
+            totalValue: totalValue,
+            lowStockCount: lowStockCount,
+            inventoryItems: inventoryItems,
+            generatedDate: generatedDate,
+            currentYear: currentYear
+        };
+
+        // Generate HTML using the template function
+        const html = INVENTORY_STOCK_TEMPLATE(templateData);
+
+        // PDF options
+        const options = {
+            format: 'A4',
+            border: {
+                top: '0.5in',
+                right: '0.5in',
+                bottom: '0.5in',
+                left: '0.5in'
+            }
+        };
+
+        // Generate PDF
+        return new Promise((resolve, reject) => {
+            pdf.create(html, options).toBuffer((err, buffer) => {
+                if (err) {
+                    console.error("PDF generation error:", err);
+                    reject(err);
+                } else {
+                    console.log("Inventory stock PDF generated successfully");
+                    resolve(buffer);
+                }
+            });
+        });
+    } catch (error) {
+        console.error("Error in generateInventoryStockPDF:", error);
+        throw new Error(`Failed to generate PDF: ${error.message}`);
+    }
+};
