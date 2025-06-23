@@ -38,7 +38,7 @@ const AllInventory = () => {
                         <h2 className="text-xl font-semibold">{item.name}</h2>
                         <p className="text-gray-600">Brand: {item.brand}</p>
                         <p className="text-gray-600">Quantity: {item.quantity}</p>
-                        <p className="text-gray-600">Unit Price: ${item.unitPrice}</p>
+                        <p className="text-gray-600">Unit Price: RS. {item.unitPrice}</p>
                         <p className="text-gray-600">Expiry Date: {item.expireDate}</p>
                         <p className="text-gray-600">Supplier: {item.supplierName}</p>
                         <p className="text-gray-600">Email: {item.email}</p>

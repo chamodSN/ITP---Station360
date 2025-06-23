@@ -25,8 +25,7 @@ const Vehicle = () => {
 
     const updateVehicle = async () => {
         try {
-
-            console.log(vehicle)
+            console.log(vehicle);
             const formData = new FormData();
 
             formData.append("Image", vehicle.Image);
@@ -46,7 +45,7 @@ const Vehicle = () => {
             console.log('data', data);
 
             if (data.success) {
-                toast.success("Vehicle Updated Sucessfully");
+                toast.success("Vehicle Updated Successfully");
                 setIsEdit(false);
             } else {
                 toast.error(data.message);
@@ -67,27 +66,50 @@ const Vehicle = () => {
         } catch (error) {
             console.error("Error updating image:", error);
         }
-    }
+    };
 
     return vehicle && (
-        <div>
-            <h1>Vehicle</h1>
-            <p>{vehicle.brandName}</p>
-            <p>{vehicle.modelName}</p>
-            <p>{vehicle.vinNumber}</p>
-            <p>{vehicle.plateNumber}</p>
-            <p>{vehicle.fuelType}</p>
-            {!isEdit ? <img src={vehicle.Image} alt={vehicle.brandName} /> :
-                <input type="file" onChange={(e) => setImage(e.target.files[0])} />
-            }{isEdit ? (
-                <button onClick={() => updateVehicle()}>Save</button>
-            ) : (
-                <button onClick={() => setIsEdit(!isEdit)}>Edit</button>
-            )}
-            <br />
-            <br />
-            <button onClick={() => deleteVehicle()}>Delete</button>
+        <div className="max-w-lg mx-auto p-6 bg-white shadow-lg rounded-lg">
+            <h1 className="text-2xl font-bold mb-4 text-center">Vehicle Details</h1>
+            <p className="text-lg font-semibold">{vehicle.brandName}</p>
+            <p className="text-gray-600">{vehicle.modelName}</p>
+            <p className="text-gray-500">VIN: {vehicle.vinNumber}</p>
+            <p className="text-gray-500">Plate: {vehicle.plateNumber}</p>
+            <p className="text-gray-500">Fuel: {vehicle.fuelType}</p>
 
+            {!isEdit ? (
+                <img src={vehicle.Image} alt={vehicle.brandName} className="mt-4 w-full h-40 object-cover rounded-lg" />
+            ) : (
+                <input 
+                    type="file" 
+                    onChange={(e) => setImage(e.target.files[0])} 
+                    className="mt-2 w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+            )}
+
+            <div className="mt-4 flex space-x-4">
+                {isEdit ? (
+                    <button 
+                        onClick={() => updateVehicle()} 
+                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-300"
+                    >
+                        Save
+                    </button>
+                ) : (
+                    <button 
+                        onClick={() => setIsEdit(!isEdit)} 
+                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300"
+                    >
+                        Edit
+                    </button>
+                )}
+                <button 
+                    onClick={() => deleteVehicle()} 
+                    className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition duration-300"
+                >
+                    Delete
+                </button>
+            </div>
         </div>
     );
 };

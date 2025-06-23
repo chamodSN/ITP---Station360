@@ -1,23 +1,33 @@
+import jwt from 'jsonwebtoken';
 
+export const authEmployee = (req, res, next) => {
+    const eToken = req.cookies.eToken;
 
-const authEmployee =async (req,res,next) => {
-
-    try {
-        const {etoken} = req.headers
-        if (!etoken) {
-            return res.json({success:false,message:'Not Authorized Login Again'})
-
-        }
-        const token_decode = Jwt.verify(etoken,process.env.JWT_SECRET)
-        req.body.empId = token_decode.id
-        next()
-    }catch (error) {
-        console.log(error)
-        res.json({success:false,message:error.message})
+    if (!eToken) {
+        return res.status(401).json({ 
+            success: false, 
+            message: "Unauthorized - no token provided" 
+        });
     }
 
-}
+    try {
+        const decoded = jwt.verify(eToken, process.env.JWT_SECRET);
 
+        if (!decoded || !decoded.employeeId) {
+            return res.status(401).json({ 
+                success: false, 
+                message: "Unauthorized - invalid token" 
+            });
+        }
 
+        req.employeeId = decoded.employeeId;
+        next();
 
-export default authEmployee
+    } catch (error) {
+        console.error("Auth error:", error);
+        return res.status(401).json({ 
+            success: false, 
+            message: "Unauthorized - invalid token" 
+        });
+    }
+};

@@ -4,23 +4,15 @@ import serviceModel from '../models/serviceModel.js';
 const addService = async (req, res) => {
     try {
 
-        const { serviceName, category, displayImage, description, specificationsString, price, available, isBookable, interval } = req.body
+        const { serviceName, category, displayImage, description, specificationsString, price, available, interval } = req.body
 
         const imageFile = req.file
 
-        const isBookableBoolean = JSON.parse(isBookable)
         const isAvailableBoolean = JSON.parse(available)
 
-        if (isBookableBoolean) {
-            if (!serviceName || !category || !description || !specificationsString || !price || !imageFile || !interval) {
-                return res.json({ success: false, message: "All fields are required" });
-            }
-        } else {
-            if (!serviceName || !category || !description || !specificationsString || !price || !imageFile) {
-                return res.json({ success: false, message: "All fields are required" });
-            }
+        if (!serviceName || !category || !description || !specificationsString || !price || !imageFile || !interval) {
+            return res.json({ success: false, message: "All fields are required" });
         }
-
 
         const imageUpload = await cloudinary.uploader.upload(imageFile.path, { resource_type: "image" })
 
@@ -30,20 +22,18 @@ const addService = async (req, res) => {
 
         let timeSlots = [];
 
-        if (isBookableBoolean) {
-            const startTime = 9.00 * 60;
-            const endTime = 17.00 * 60;
-            let timeStapm = startTime;
+        const startTime = 9.00 * 60;
+        const endTime = 17.00 * 60;
+        let timeStapm = startTime;
 
-            while (timeStapm < endTime) {
-                let hours = Math.floor(timeStapm / 60);
-                let minutes = timeStapm % 60;
+        while (timeStapm < endTime) {
+            let hours = Math.floor(timeStapm / 60);
+            let minutes = timeStapm % 60;
 
-                let formattedTime = `${hours}.${minutes.toString().padStart(2, '0')}`;
-                timeSlots.push(formattedTime);
+            let formattedTime = `${hours}.${minutes.toString().padStart(2, '0')}`;
+            timeSlots.push(formattedTime);
 
-                timeStapm += Number(interval);
-            }
+            timeStapm += Number(interval);
         }
 
         const serviceData = {
@@ -54,7 +44,7 @@ const addService = async (req, res) => {
             specifications: seperated,
             price: parseInt(price),
             available: isAvailableBoolean,
-            isBookable: isBookableBoolean,
+            interval: parseInt(interval),
             timeSlots: timeSlots,
         }
 
@@ -71,8 +61,20 @@ const addService = async (req, res) => {
 
 const displayAllServices = async (req, res) => {
     try {
+        const { search } = req.query;
+        let query = {};
 
-        const allServices = await serviceModel.find().select('-bookedSlots');
+        if (search) {
+            query = {
+                $or: [
+                    { serviceName: { $regex: search, $options: 'i' } },
+                    { category: { $regex: search, $options: 'i' } },
+                    { description: { $regex: search, $options: 'i' } }
+                ]
+            };
+        }
+
+        const allServices = await serviceModel.find(query).select('-bookedSlots');
 
         if (allServices.length === 0) {
             return res.json({ success: false, message: "No services found" })
@@ -106,76 +108,69 @@ const displaySingleServices = async (req, res) => {
 
 const updateService = async (req, res) => {
     try {
-
         console.log("Request body:", req.body);
         console.log("File received:", req.file);
 
         const serviceId = req.params.serviceId;
-        const { serviceName, category, description, specificationsString, price, available, isBookable, interval } = req.body;
+        const { serviceName, category, description, specificationsString, price, available, interval } = req.body;
         const imageFile = req.file;
 
-        const isBookableBoolean = JSON.parse(isBookable)
-        const isAvailableBoolean = JSON.parse(available)
-
-        if (isBookableBoolean) {
-            if (!serviceName || !category || !description || !specificationsString || !price || !available || !isBookable || !interval) {
-                return res.json({ success: false, message: "All fields are required" })
-            }
-        } else {
-            if (!serviceName || !category || !description || !specificationsString || !price || !available || !isBookable) {
-                return res.json({ success: false, message: "All fields are required" })
-            }
+        // Validation
+        if (!serviceName || !category || !description || !specificationsString || !price || !available || !interval) {
+            return res.json({ success: false, message: "All fields are required" });
         }
 
         let service = await serviceModel.findById(serviceId);
-
         if (!service) {
             return res.json({ success: false, message: "Service not found" });
         }
 
-        let timeSlots = service.timeSlots;
+        // Generate time slots using dot format (e.g., 9.30)
+        const startTime = 9 * 60;
+        const endTime = 17 * 60;
+        let timeStapm = startTime;
+        let timeSlots = [];
 
-        if (interval) {
-            const startTime = 9.00 * 60;
-            const endTime = 17.00 * 60;
-            let timeStapm = startTime;
-
-            timeSlots = []; // Clear existing timeSlots
-
-            while (timeStapm < endTime) {
-                let hours = Math.floor(timeStapm / 60);
-                let minutes = timeStapm % 60;
-                let formattedTime = `${hours}.${minutes.toString().padStart(2, '0')}`;
-                timeSlots.push(formattedTime);
-                timeStapm += Number(interval);
-            }
-            await serviceModel.findByIdAndUpdate(serviceId, { interval: interval })
-            await serviceModel.findByIdAndUpdate(serviceId, { timeSlots: timeSlots })
+        while (timeStapm < endTime) {
+            let hours = Math.floor(timeStapm / 60);
+            let minutes = timeStapm % 60;
+            let formattedTime = `${hours}.${minutes.toString().padStart(2, '0')}`;
+            timeSlots.push(formattedTime);
+            timeStapm += Number(interval);
         }
 
-        const seperated = specificationsString.split(",");
+        const specifications = specificationsString.split(",");
 
-        await serviceModel.findByIdAndUpdate(serviceId, { serviceName, category, description, specifications: seperated, price, available, isBookable })
-
-        let updateMessage = "Service updated successfully.";
+        const updateData = {
+            serviceName,
+            category,
+            description,
+            specifications,
+            price,
+            available,
+            interval,
+            timeSlots
+        };
 
         if (imageFile) {
-            const imageUpload = await cloudinary.uploader.upload(imageFile.path, { resource_type: "image" })
-
-            const imageUrl = imageUpload.secure_url;
-
-            await serviceModel.findByIdAndUpdate(serviceId, { displayImage: imageUrl })
-
-            updateMessage = "Service and image updated successfully.";
-
+            const imageUpload = await cloudinary.uploader.upload(imageFile.path, { resource_type: "image" });
+            updateData.displayImage = imageUpload.secure_url;
         }
+
+        await serviceModel.findByIdAndUpdate(serviceId, updateData);
+
+        const updateMessage = imageFile
+            ? "Service and image updated successfully."
+            : "Service updated successfully.";
 
         return res.json({ success: true, message: updateMessage });
 
     } catch (error) {
+        console.error("Error updating service:", error.message);
         return res.json({ success: false, message: error.message });
     }
-}
+};
+
 
 const deleteService = async (req, res) => {
     try {
@@ -196,4 +191,28 @@ const deleteService = async (req, res) => {
     }
 }
 
-export { addService, displayAllServices, displaySingleServices, updateService, deleteService }
+const searchServices = async (req, res) => {
+    try {
+        const search = req.query.search || '';
+        const regex = new RegExp(search, 'i'); // case-insensitive search
+
+        const services = await serviceModel.find({
+            $or: [
+                { serviceName: { $regex: regex } },
+                { category: { $regex: regex } },
+                { description: { $regex: regex } }
+            ]
+        }).select('-bookedSlots');
+
+        if (services.length === 0) {
+            return res.json({ success: false, message: "No matching services found" });
+        }
+
+        return res.json({ success: true, services });
+    } catch (error) {
+        return res.json({ success: false, message: error.message });
+    }
+};
+
+
+export { addService, displayAllServices, displaySingleServices, updateService, deleteService, searchServices }

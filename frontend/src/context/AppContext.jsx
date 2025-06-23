@@ -1,38 +1,65 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
 import axios from 'axios';
 
 export const AppContext = createContext();
 
-const AppContextProvider = (props) => {
-    const [services, setServices] = useState(null);
+export const AppProvider = ({ children }) => {
+    const [services, setServices] = useState([]);
+    const [userVehicles, setUserVehicles] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [servicesLoading, setServicesLoading] = useState(false);
 
     const getAllServices = async () => {
         try {
-            const { data } = await axios.get('http://localhost:4200/api/admin/service/');
-            console.log("API Response:", data);
+            setServicesLoading(true);
+            const searchParams = new URLSearchParams(window.location.search);
+            const searchQuery = searchParams.get('search');
+            const url = searchQuery 
+                ? `http://localhost:4200/api/admin/service?search=${encodeURIComponent(searchQuery)}`
+                : 'http://localhost:4200/api/admin/service';
 
+            const { data } = await axios.get(url);
             if (data.success) {
                 setServices(data.allServices);
-            } else {
-                console.error("Failed to fetch services", data.message);
             }
         } catch (error) {
-            console.error("Error fetching services", error);
-
+            console.error('Error fetching services:', error);
+        } finally {
+            setServicesLoading(false);
         }
     };
 
-    useEffect(() => {
-        getAllServices();
-    }, []);
+    const fetchUserVehicles = async () => {
+        try {
+            setLoading(true);
+            const { data } = await axios.get('http://localhost:4200/api/user/my-vehicles', {
+                withCredentials: true
+            });
 
-    const value = { services };
+            if (data.success) {
+                setUserVehicles(data.vehicles);
+            }
+        } catch (error) {
+            console.error('Error fetching vehicles:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
-        <AppContext.Provider value={value}>
-            {props.children}
+        <AppContext.Provider value={{
+            services,
+            servicesLoading,
+            getAllServices,
+            userVehicles,
+            loading,
+            fetchUserVehicles
+        }}>
+            {children}
         </AppContext.Provider>
     );
 };
 
-export default AppContextProvider;
+export const useAppContext = () => {
+    return useContext(AppContext);
+};

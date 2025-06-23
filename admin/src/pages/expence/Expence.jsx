@@ -1,11 +1,13 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+
 
 function Expence() {
     const { id } = useParams();
     const [Expence, setExpence] = useState(null);
     const [isEdit, setIsEdit] = useState(false);
+    const Navigate = useNavigate();
 
     const fetchExpence = async () => {
         try {
@@ -23,6 +25,7 @@ function Expence() {
         if (window.confirm("Are you sure you want to delete this expense?")) {
             try {
                 await axios.delete(`http://localhost:4200/api/admin/expence/${id}`);
+                Navigate('/all-expences');
             } catch (error) {
                 console.error("Error deleting expense:", error);
             }
