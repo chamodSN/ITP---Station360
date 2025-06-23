@@ -43,7 +43,6 @@ const UserNotifications = () => {
 
       if (data.success) {
         setNotifications(data.notifications);
-        console.log("Notification:", data.notifications);
       } else {
         toast.error(data.message || "Failed to fetch notifications");
       }
@@ -59,21 +58,22 @@ const UserNotifications = () => {
     fetchNotifications();
   }, [audience]);
 
-  const formatDateTime = (isoString) => {
-    const dateObj = new Date(isoString);
-    const date = dateObj.toLocaleDateString('en-GB'); 
-    const time = dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    return { date, time };
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  const formatTime = (timeString) => {
+    return timeString.split(':').slice(0, 2).join(':');
   };
 
   return (
     <div className="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-md">
-      <div className="flex justify-between items-center mb-4">
-        <h1 tabIndex="0" className="text-2xl font-bold text-gray-800">
-          Employee Notifications
-        </h1>
-      </div>
-
+      <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">
+        {audience === 'employees' ? 'Employee Notifications' : 
+         audience === 'users' ? 'Customer Notifications' : 'All Notifications'}
+      </h1>
+      
       {loading ? (
         <div className="flex justify-center items-center h-40">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -84,37 +84,34 @@ const UserNotifications = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {notifications.map((notification, index) => {
-            const { date, time } = formatDateTime(notification.updatedAt);
-            return (
-              <div
-                key={index}
-                className="bg-gray-50 p-4 rounded-lg shadow-sm hover:shadow-md transition-all mb-4 border-l-4"
-                style={{
-                  borderLeftColor: getPriorityBorderColor(notification.priority)
-                }}
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <h2 className="text-lg font-semibold text-gray-800">{notification.Title}</h2>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(notification.priority)}`}>
-                    {notification.priority.charAt(0).toUpperCase() + notification.priority.slice(1)}
-                  </span>
-                </div>
-                <p className="text-gray-600 mb-2">{notification.body}</p>
-                <div className="flex justify-between items-center text-sm text-gray-500">
-                  <span className="capitalize">For: {notification.targetAudience}</span>
-                  <div className="flex gap-4">
-                    <span>Date: {date}</span>
-                    <span>Time: {time}</span>
-                  </div>
+          {notifications.map((notification, index) => (
+            <div
+              key={index}
+              className="bg-gray-50 p-4 rounded-lg shadow-sm hover:shadow-md transition-all mb-4 border-l-4"
+              style={{
+                borderLeftColor: getPriorityBorderColor(notification.priority)
+              }}
+            >
+              <div className="flex justify-between items-start mb-2">
+                <h2 className="text-lg font-semibold text-gray-800">{notification.Title}</h2>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(notification.priority)}`}>
+                  {notification.priority.charAt(0).toUpperCase() + notification.priority.slice(1)}
+                </span>
+              </div>
+              <p className="text-gray-600 mb-2">{notification.Body}</p>
+              <div className="flex justify-between items-center text-sm text-gray-500">
+                <span className="capitalize">For: {notification.targetAudience}</span>
+                <div className="flex gap-4">
+                  <span>Date: {formatDate(notification.Date)}</span>
+                  <span>Time: {formatTime(notification.Time)}</span>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       )}
     </div>
   );
 };
 
-export default UserNotifications;
+export default UserNotifications; 
