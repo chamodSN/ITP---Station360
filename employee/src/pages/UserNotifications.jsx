@@ -44,7 +44,6 @@ const UserNotifications = () => {
       if (data.success) {
         setNotifications(data.notifications);
         console.log("Notification:", data.notifications);
-
       } else {
         toast.error(data.message || "Failed to fetch notifications");
       }
@@ -73,7 +72,6 @@ const UserNotifications = () => {
         <h1 tabIndex="0" className="text-2xl font-bold text-gray-800">
           Employee Notifications
         </h1>
-        
       </div>
 
       {loading ? (
