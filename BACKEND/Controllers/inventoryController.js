@@ -3,6 +3,7 @@ import { v2 as cloudinary } from 'cloudinary'
 import inventoryModel from '../models/inventoryModel.js'
 import { sendLowStockOrderEmail } from '../nodemailer/emails.js';
 import Order from '../models/orderModel.js';
+import { generateInventoryStockPDF } from '../pdf/ReportGenerator.js';
 
 const LOW_STOCK_THRESHOLD = 15;
 
@@ -93,16 +94,24 @@ const expiringItems = async (req, res) => {
         const oneWeekFromNow = new Date();
         oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
 
+        // Find items where either the main expiryDate or any stock entry is expiring within a week
         const expiringItems = await inventoryModel.find({
-            expiryDate: { $lte: oneWeekFromNow }
+            $or: [
+                { expiryDate: { $lte: oneWeekFromNow } },
+                { 'stockEntries.expiryDate': { $lte: oneWeekFromNow } }
+            ]
         });
+
+        // Filter out items that have no quantity
+        const validExpiringItems = expiringItems.filter(item => item.quantity > 0);
 
         return res.json({
             success: true,
-            expiringItems,
-            expiringCount: expiringItems.length
+            expiringItems: validExpiringItems,
+            expiringCount: validExpiringItems.length
         });
     } catch (error) {
+        console.error('Error in expiringItems:', error);
         return res.json({ success: false, message: error.message });
     }
 }
@@ -116,30 +125,32 @@ const stockOut = async (req, res) => {
             return res.json({ success: false, message: "Item not found." });
         }
 
-        if (new Date() > item.expiryDate) {
-            return res.json({ success: false, message: "Cannot stock out expired items." });
-        }
+        // Filter out expired entries and sort by expiry date (earliest first)
+        let validStockEntries = item.stockEntries
+            .filter(entry => new Date(entry.expiryDate) > new Date())
+            .sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate));
 
-        if (item.quantity < quantity) {
-            return res.json({ success: false, message: "Insufficient stock." });
+        const totalAvailable = validStockEntries.reduce((sum, entry) => sum + entry.quantity, 0);
+        if (totalAvailable < quantity) {
+            return res.json({ success: false, message: "Insufficient unexpired stock." });
         }
 
         let remainingQuantity = Number(quantity);
-        let updatedStockEntries = [...item.stockEntries];
+        const updatedStockEntries = [];
 
-        for (let i = 0; i < updatedStockEntries.length && remainingQuantity > 0; i++) {
-            if (new Date() > updatedStockEntries[i].expiryDate) {
-                updatedStockEntries.splice(i, 1);
-                i--;
+        for (let entry of validStockEntries) {
+            if (remainingQuantity === 0) {
+                updatedStockEntries.push(entry);
                 continue;
             }
 
-            if (updatedStockEntries[i].quantity <= remainingQuantity) {
-                remainingQuantity -= updatedStockEntries[i].quantity;
-                updatedStockEntries.splice(i, 1);
-                i--;
+            if (entry.quantity <= remainingQuantity) {
+                remainingQuantity -= entry.quantity;
+                // Skip adding this entry (used up)
             } else {
-                updatedStockEntries[i].quantity -= remainingQuantity;
+                // Partial use
+                entry.quantity -= remainingQuantity;
+                updatedStockEntries.push(entry);
                 remainingQuantity = 0;
             }
         }
@@ -155,17 +166,29 @@ const stockOut = async (req, res) => {
     } catch (error) {
         return res.json({ success: false, message: error.message });
     }
-}
+};
+
 
 const displayAllInventory = async (req, res) => {
     try {
+        const { search } = req.query;
+        let query = {};
 
-        const AllInventory = await inventoryModel.find()
+        if (search) {
+            query = {
+                $or: [
+                    { name: { $regex: search, $options: 'i' } },
+                    { brand: { $regex: search, $options: 'i' } },
+                    { supplierName: { $regex: search, $options: 'i' } },
+                    { itemType: { $regex: search, $options: 'i' } }
+                ]
+            };
+        }
 
-        return res.json({ success: true, AllInventory })
-
+        const AllInventory = await inventoryModel.find(query);
+        return res.json({ success: true, AllInventory });
     } catch (error) {
-        return res.json({ sucess: false, message: error.message })
+        return res.json({ success: false, message: error.message });
     }
 }
 
@@ -285,6 +308,7 @@ const getOrderedItems = async (req, res) => {
 const restock = async (req, res) => {
     try {
         const { id, quantity, unitPrice, expiryDate } = req.body;
+        console.log('Received expiryDate:', expiryDate);
 
         if (!id || !quantity || !unitPrice || !expiryDate) {
             return res.status(400).json({
@@ -309,11 +333,19 @@ const restock = async (req, res) => {
             expiryDate: new Date(expiryDate)
         };
 
+        
+
+
         // Add the new stock entry to the item's stockEntries array
         item.stockEntries.push(newStockEntry);
 
         // Update the total quantity
         item.quantity += Number(quantity);
+
+        if (!item.expiryDate) {
+            item.expiryDate = new Date(expiryDate);
+        }
+        
 
         // Save the updated item
         await item.save();
@@ -332,6 +364,37 @@ const restock = async (req, res) => {
     }
 };
 
+const generateInventoryStockReport = async (req, res) => {
+    try {
+        // Fetch all inventory items
+        const inventory = await inventoryModel.find();
+
+        if (!inventory.length) {
+            return res.status(404).json({
+                success: false,
+                message: "No inventory items found"
+            });
+        }
+
+        // Generate PDF
+        const pdfBuffer = await generateInventoryStockPDF(inventory);
+
+        // Set response headers for PDF download
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename=inventory-stock-report.pdf');
+        res.setHeader('Content-Length', pdfBuffer.length);
+
+        // Send the PDF buffer
+        res.send(pdfBuffer);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error generating inventory stock PDF",
+            error: error.message
+        });
+    }
+};
+
 export {
     addInventory,
     lowStock,
@@ -343,5 +406,6 @@ export {
     updateItem,
     orderLowStock,
     getOrderedItems,
-    restock
+    restock,
+    generateInventoryStockReport
 };

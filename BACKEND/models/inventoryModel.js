@@ -4,7 +4,7 @@ const stockEntrySchema = new mongoose.Schema({
     quantity: { type: Number, required: true },
     unitPrice: { type: Number, required: true },
     dateAdded: { type: Date, default: Date.now },
-    expiryDate: { type: Date, required: true }
+    expiryDate: { type: Date}
 });
 
 const inventorySchema = new mongoose.Schema({

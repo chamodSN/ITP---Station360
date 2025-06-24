@@ -1,8 +1,9 @@
 import express, { Router } from 'express'
-import { addInventory, lowStock, expiringItems, stockOut, displayAllInventory, displaySingleItem, deleteSingleItem, updateItem, orderLowStock, getOrderedItems, restock } from '../Controllers/inventoryController.js'
+import { addInventory, lowStock, expiringItems, stockOut, displayAllInventory, displaySingleItem, deleteSingleItem, updateItem, orderLowStock, getOrderedItems, restock, generateInventoryStockReport } from '../Controllers/inventoryController.js'
 import upload from '../middleware/multer.js'
 
 const inventoryRoute = express.Router()
+
 
 inventoryRoute.post('/add-inventory', upload.single('image'), addInventory)
 inventoryRoute.get('/low-stock', lowStock)
@@ -12,6 +13,7 @@ inventoryRoute.post('/restock', restock)
 inventoryRoute.post('/order-low-stock', orderLowStock)
 inventoryRoute.get('/all-inventory', displayAllInventory)
 inventoryRoute.get('/ordered-items', getOrderedItems)
+inventoryRoute.get('/stock-report', generateInventoryStockReport)
 inventoryRoute.get('/:id', displaySingleItem)
 inventoryRoute.delete('/:id', deleteSingleItem)
 inventoryRoute.put('/:id', updateItem)

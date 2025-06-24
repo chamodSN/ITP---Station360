@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 function Inventory() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [inventory, setInventory] = useState(null);
     const [isEdit, setIsEdit] = useState(false);
 
@@ -24,6 +26,7 @@ function Inventory() {
             if (data.success) {
                 await fetchInventory();
                 setIsEdit(false);
+                toast.success("Inventory updated successfully!");
             } else {
                 console.error(data.message);
             }
@@ -36,6 +39,8 @@ function Inventory() {
         if (window.confirm("Are you sure you want to delete this Inventory?")) {
             try {
                 await axios.delete(`http://localhost:4200/api/admin/inventory/${id}`);
+                toast.success("Inventory deleted successfully!");
+                navigate("/all-inventory");
             } catch (error) {
                 console.error("Error", error);
             }

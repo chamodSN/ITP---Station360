@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
+import { motion } from 'framer-motion';
 
 const OrderedItems = () => {
     const [orderedItems, setOrderedItems] = useState([]);
@@ -66,48 +67,36 @@ const OrderedItems = () => {
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-2xl font-bold mb-6">Ordered Items</h1>
-            
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="grid grid-cols-1 gap-4 p-4">
-                    {!orderedItems || orderedItems.length === 0 ? (
-                        <p className="text-gray-500 text-center py-4">No ordered items found.</p>
-                    ) : (
-                        orderedItems.map((order) => (
-                            <div key={order._id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <h3 className="text-lg font-semibold">{order.item?.name || 'Unknown Item'}</h3>
-                                        <p className="text-gray-600">{order.item?.brand || 'Unknown Brand'}</p>
-                                    </div>
-                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                                    </span>
-                                </div>
-                                
-                                <div className="mt-4 grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p className="text-sm text-gray-500">Quantity Ordered</p>
-                                        <p className="font-medium">{order.quantity} {order.item?.unitType || ''}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Order Date</p>
-                                        <p className="font-medium">{format(new Date(order.orderDate), 'MMM dd, yyyy')}</p>
-                                    </div>
-                                    {order.receivedDate && (
-                                        <div>
-                                            <p className="text-sm text-gray-500">Received Date</p>
-                                            <p className="font-medium">{format(new Date(order.receivedDate), 'MMM dd, yyyy')}</p>
-                                        </div>
-                                    )}
-                                    <div>
-                                        <p className="text-sm text-gray-500">Supplier</p>
-                                        <p className="font-medium">{order.item?.supplier?.name || 'Unknown Supplier'}</p>
-                                    </div>
-                                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {!orderedItems || orderedItems.length === 0 ? (
+                    <p className="text-gray-500 text-center py-4 col-span-full">No ordered items found.</p>
+                ) : (
+                    orderedItems.map((order) => (
+                        <motion.div
+                            key={order._id}
+                            whileHover={{ scale: 1.04, boxShadow: '0 8px 32px 0 rgba(0,0,0,0.12)' }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                            className="relative flex items-center border border-gray-300 rounded-lg shadow-md p-4 cursor-pointer bg-white"
+                        >
+                            <span className={`absolute top-2 right-2 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
+                                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                            </span>
+                            <img
+                                src={order.item?.image || 'https://via.placeholder.com/96x96?text=No+Image'}
+                                alt={order.item?.name || 'Unknown Item'}
+                                className="w-24 h-24 object-cover rounded-md mr-6"
+                            />
+                            <div className="flex flex-col justify-center">
+                                <h3 className="text-xl font-semibold mb-2">{order.item?.name || 'Unknown Item'}</h3>
+                                <p className="text-gray-600 font-medium mb-1">Quantity: {order.quantity} {order.item?.unitType || ''}</p>
+                                <p className="text-gray-500 text-sm">Order Date: {format(new Date(order.orderDate), 'MMM dd, yyyy')}</p>
+                                {order.receivedDate && (
+                                    <p className="text-gray-500 text-sm">Received: {format(new Date(order.receivedDate), 'MMM dd, yyyy')}</p>
+                                )}
                             </div>
-                        ))
-                    )}
-                </div>
+                        </motion.div>
+                    ))
+                )}
             </div>
         </div>
     );
