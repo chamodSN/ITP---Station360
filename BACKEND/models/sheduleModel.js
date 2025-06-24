@@ -8,7 +8,8 @@ const scheduleSchema = new mongoose.Schema({
   taskType: { type: String, required: true },
   taskDetails: { type: String, required: true, maxlength: 500 },
   taskStatus: { type: String, default: "assigned" },
-  bookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking' }
+  bookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking' },
+  vehicleId: { type: mongoose.Schema.Types.ObjectId, ref: 'vehicle' }
 });
 
 const scheduleModel = mongoose.models.schedule || mongoose.model('schedule', scheduleSchema);

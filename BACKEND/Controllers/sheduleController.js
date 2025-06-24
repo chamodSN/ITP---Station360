@@ -35,7 +35,8 @@ const displayAllShedules = async(req, res) => {
   try {
     const AllShedules = await scheduleModel.find()
       .populate('employeeId', 'name email phone')
-      .populate('bookingId', 'serviceId vehicleId');
+      .populate('bookingId', 'serviceId vehicleId status')
+      .populate('vehicleId', 'brandName modelName plateNumber');
 
     return res.json({ success: true, AllShedules });
   } catch (error) {
@@ -48,7 +49,8 @@ const displayShedule = async(req, res) => {
     const SheduleId = req.params.id;
     const Shedule = await scheduleModel.findById(SheduleId)
       .populate('employeeId', 'name email phone')
-      .populate('bookingId', 'serviceId vehicleId');
+      .populate('bookingId', 'serviceId vehicleId status')
+      .populate('vehicleId', 'brandName modelName plateNumber');
 
     return res.json({ success: true, Shedule });
   } catch (error) {
@@ -119,32 +121,32 @@ const assignEmployeeToBooking = async (req, res) => {
     const { employeeId } = req.body;
 
     if (!employeeId) {
-      return res.json({ success: false, message: "Employee ID is required" });
+      return res.status(400).json({ success: false, message: "Employee ID is required" }); // 400 Bad Request
     }
 
     // Check if booking exists
     const booking = await bookingModel.findById(bookingId);
     if (!booking) {
-      return res.json({ success: false, message: "Booking not found" });
+      return res.status(404).json({ success: false, message: "Booking not found" }); // 404 Not Found
     }
 
     // Check if employee exists
     const employee = await employeeModel.findById(employeeId);
     if (!employee) {
-      return res.json({ success: false, message: "Employee not found" });
+      return res.status(404).json({ success: false, message: "Employee not found" }); // 404 Not Found
     }
 
     // Check if employee has approved leave on the booking date
     const approvedLeave = await leaveModel.findOne({
-      employeeId: employeeId,
-      date: booking.date,
+      employee: employeeId,
+      leaveDate: booking.date,
       status: 'Approved'
     });
 
     if (approvedLeave) {
-      return res.json({ 
-        success: false, 
-        message: "Employee has approved leave on this date" 
+      return res.status(409).json({ // 409 Conflict
+        success: false,
+        message: "Employee has approved leave on this date"
       });
     }
 
@@ -156,33 +158,29 @@ const assignEmployeeToBooking = async (req, res) => {
       });
     }
 
-    // Check if employee is already assigned to another booking at the same time
+    // Check for overlapping schedule
     const existingSchedule = await scheduleModel.findOne({
       employeeId: employeeId,
       date: booking.date,
       $or: [
-        // Case 1: New booking starts during an existing schedule
         {
           $and: [
             { time: { $lte: booking.timeSlot } },
             { endTime: { $gt: booking.timeSlot } }
           ]
         },
-        // Case 2: New booking ends during an existing schedule
         {
           $and: [
             { time: { $lt: booking.endTime } },
             { endTime: { $gte: booking.endTime } }
           ]
         },
-        // Case 3: New booking completely overlaps an existing schedule
         {
           $and: [
             { time: { $gte: booking.timeSlot } },
             { endTime: { $lte: booking.endTime } }
           ]
         },
-        // Case 4: New booking completely contains an existing schedule
         {
           $and: [
             { time: { $lte: booking.timeSlot } },
@@ -193,9 +191,9 @@ const assignEmployeeToBooking = async (req, res) => {
     });
 
     if (existingSchedule) {
-      return res.json({ 
-        success: false, 
-        message: "Employee is already assigned to another task during this time period" 
+      return res.status(409).json({ // 409 Conflict
+        success: false,
+        message: "Employee is already assigned to another task during this time period"
       });
     }
 
@@ -208,19 +206,20 @@ const assignEmployeeToBooking = async (req, res) => {
       taskType: "Service",
       taskDetails: `Service booking for vehicle ${booking.vehicleId}`,
       taskStatus: "assigned",
-      bookingId: bookingId
+      bookingId: bookingId,
+      vehicleId: booking.vehicleId
     };
 
     const newSchedule = new scheduleModel(scheduleData);
     await newSchedule.save();
 
-    // Update booking with technician ID
+    // Update booking
     booking.technicianId = employeeId;
     booking.status = "Assigned";
     await booking.save();
 
-    return res.json({ 
-      success: true, 
+    return res.status(200).json({ // 200 OK
+      success: true,
       message: "Employee assigned to booking successfully",
       schedule: newSchedule,
       booking: booking
@@ -228,9 +227,13 @@ const assignEmployeeToBooking = async (req, res) => {
 
   } catch (error) {
     console.log(error);
-    return res.json({ success: false, message: error.message });
+    return res.status(500).json({ // 500 Internal Server Error
+      success: false,
+      message: "An error occurred while assigning the employee"
+    });
   }
 };
+
 
 const getAllBookings = async (req, res) => {
   try {
@@ -250,17 +253,36 @@ const getAllBookings = async (req, res) => {
 
 const getEmployeeTasks = async (req, res) => {
   try {
-    const employeeId = req.employeeId; // This comes from the authEmployee middleware
+    const employeeId = req.employeeId;
+    console.log('Fetching tasks for employee:', employeeId);
 
     const bookings = await bookingModel.find({ technicianId: employeeId })
       .populate('userId', 'name email phone')
-      .populate('serviceId', 'serviceName price')
+      .populate('serviceId', 'serviceName price category')
+      .populate('vehicleId', 'brandName modelName plateNumber')
       .sort({ createdAt: -1 });
 
-    return res.json({ success: true, bookings });
+    console.log('Found bookings:', bookings);
+
+    if (!bookings) {
+      return res.json({ 
+        success: false, 
+        message: "No tasks found for this employee" 
+      });
+    }
+
+    return res.json({ 
+      success: true, 
+      bookings,
+      message: "Tasks fetched successfully"
+    });
   } catch (error) {
     console.error('Error fetching employee tasks:', error);
-    return res.json({ success: false, message: error.message });
+    return res.status(500).json({ 
+      success: false, 
+      message: "Failed to fetch tasks",
+      error: error.message 
+    });
   }
 };
 
