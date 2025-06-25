@@ -26,6 +26,7 @@ const TaskDetails = () => {
   const fetchTaskDetails = async () => {
     try {
       const response = await axios.get(`${API_URL}/api/emp/shedule/bookings/my-tasks`);
+      console.log("response.data",response.data);
 
       if (!response.data.success) {
         toast.error(response.data.message || 'Failed to fetch task details');

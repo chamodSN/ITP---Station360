@@ -36,15 +36,22 @@ const MyTasks = () => {
   const fetchTasks = async () => {
     try {
       const response = await axios.get(`${API_URL}/api/emp/shedule/bookings/my-tasks`);
+      console.log('Tasks response:', response.data);
       
       if (response.data.success) {
-        // Filter for Assigned tasks
-        const assignedTasks = response.data.bookings.filter(task => task.status === 'Assigned');
+        // Filter for tasks that are not completed or billed
+        const assignedTasks = response.data.bookings.filter(task => 
+          task.status && !['done', 'billed'].includes(task.status.toLowerCase())
+        );
+        console.log('Filtered tasks:', assignedTasks);
         setTasks(assignedTasks);
+      } else {
+        console.error('Failed to fetch tasks:', response.data.message);
+        toast.error(response.data.message || 'Failed to fetch tasks');
       }
     } catch (error) {
       console.error('Error fetching tasks:', error);
-      toast.error('Failed to fetch tasks');
+      toast.error(error.response?.data?.message || 'Failed to fetch tasks');
     } finally {
       setLoading(false);
     }
