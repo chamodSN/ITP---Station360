@@ -7,6 +7,7 @@ const VehicleNavbar = () => {
     const navigate = useNavigate();
     const { isAuthenticated, logout } = useAdminAuthStore();
     const [showMenu, setShowMenu] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const handleLogout = async () => {
         try {
@@ -15,6 +16,16 @@ const VehicleNavbar = () => {
         } catch (error) {
             console.error('Logout failed:', error);
         }
+    };
+
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            navigate(`/all-vehicles?search=${encodeURIComponent(searchQuery.trim())}`);
+        } else {
+            navigate('/all-vehicles');
+        }
+        setSearchQuery('');
     };
 
     return (
@@ -27,10 +38,28 @@ const VehicleNavbar = () => {
             />
             <ul className='hidden md:flex items-start gap-5 font-medium'>
                 <NavLink to='/'><li className='py-1'>Home</li></NavLink>
-                <NavLink to='/services'><li className='py-1'>ALL SERVICES</li></NavLink>
+                <NavLink to='/all-vehicles'><li className='py-1'>ALL VEHICLES</li></NavLink>
                 <NavLink to='/about'><li className='py-1'>ABOUT</li></NavLink>
                 <NavLink to='/contact'><li className='py-1'>CONTACT</li></NavLink>
             </ul>
+
+            {/* Search Form */}
+            <form onSubmit={handleSearchSubmit} className="hidden md:flex items-center gap-2">
+                <input
+                    type="text"
+                    placeholder="Search vehicles..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="border px-3 py-2 rounded-md text-sm"
+                />
+                <button
+                    type="submit"
+                    className="bg-blue-500 text-white px-4 py-2 rounded-md text-sm"
+                >
+                    Search
+                </button>
+            </form>
+
             <div className='flex items-center gap-4'>
                 {isAuthenticated ? (
                     <button
