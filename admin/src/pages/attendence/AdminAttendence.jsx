@@ -17,10 +17,10 @@ const AdminAttendance = () => {
             try {
                 setLoading(true);
                 // Fetch employees
-                const response = await axios.get(`${API_URL}/api/admin/employee/employees`);
+                const response = await axios.get(`${API_URL}/api/admin/employee/all-employees`);
     
                 // Fetch attendance records
-                const attendanceResponse = await axios.get(`${API_URL}/api/admin/attendence/all`);
+                const attendanceResponse = await axios.get(`${API_URL}/api/attendence/all`);
     
                 if (!response.data || !response.data.success || !Array.isArray(response.data.employees)) {
                     console.error("Unexpected employee API response format", response.data);

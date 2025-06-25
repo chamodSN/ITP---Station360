@@ -157,3 +157,105 @@ export const generateInventoryStockPDF = async (inventory) => {
         throw new Error(`Failed to generate PDF: ${error.message}`);
     }
 };
+
+export const generateAttendanceReportPDF = async (data) => {
+    try {
+        console.log('Generating attendance report PDF with data:', data);
+        
+        // Generate HTML using the template
+        const html = ATTENDANCE_REPORT_TEMPLATE(data);
+        
+        // PDF options
+        const options = {
+            format: 'A4',
+            border: {
+                top: '0.5in',
+                right: '0.5in',
+                bottom: '0.5in',
+                left: '0.5in'
+            }
+        };
+
+        // Generate PDF
+        return new Promise((resolve, reject) => {
+            pdf.create(html, options).toBuffer((err, buffer) => {
+                if (err) {
+                    console.error("PDF generation error:", err);
+                    reject(err);
+                } else {
+                    console.log("Attendance report PDF generated successfully");
+                    resolve(buffer);
+                }
+            });
+        });
+    } catch (error) {
+        console.error("Error in generateAttendanceReportPDF:", error);
+        throw new Error(`Failed to generate attendance report PDF: ${error.message}`);
+    }
+};
+
+export const generateTaskReportPDF = async (data, date) => {
+    try {
+        // Format technicians data for the template
+        const techniciansHtml = data.map(tech => `
+            <div class="technician">
+                <div class="technician-name">Technician: ${tech.technicianName}</div>
+                <table>
+                    <tr>
+                        <th>Category</th>
+                        <th>Number of Tasks</th>
+                    </tr>
+                    ${tech.categories.map(cat => `
+                        <tr>
+                            <td>${cat.name}</td>
+                            <td>${cat.count}</td>
+                        </tr>
+                    `).join('')}
+                </table>
+            </div>
+        `).join('');
+
+        // Get current date and year for footer
+        const now = new Date();
+        const generatedDate = now.toLocaleDateString();
+        const currentYear = now.getFullYear();
+
+        // Create template data object
+        const templateData = {
+            date: new Date(date).toLocaleDateString(),
+            technicians: techniciansHtml,
+            generatedDate: generatedDate,
+            currentYear: currentYear
+        };
+
+        // Generate HTML using the template function
+        const html = TASK_REPORT_TEMPLATE(templateData);
+
+        // PDF options
+        const options = {
+            format: 'A4',
+            border: {
+                top: '0.5in',
+                right: '0.5in',
+                bottom: '0.5in',
+                left: '0.5in'
+            }
+        };
+
+        // Generate PDF
+        return new Promise((resolve, reject) => {
+            pdf.create(html, options).toBuffer((err, buffer) => {
+                if (err) {
+                    console.error("PDF generation error:", err);
+                    reject(err);
+                } else {
+                    console.log("Task report PDF generated successfully");
+                    resolve(buffer);
+                }
+            });
+        });
+    } catch (error) {
+        console.error("Error in generateTaskReportPDF:", error);
+        throw new Error(`Failed to generate PDF: ${error.message}`);
+    }
+};

@@ -1,7 +1,8 @@
 import Attendance from "../models/attendenceModel.js";
 import Employee from "../models/employeeModel.js";
 import moment from "moment";
-
+import scheduleModel from "../models/sheduleModel.js";
+import { generateTaskReportPDF, generateAttendanceReportPDF } from "../pdf/ReportGenerator.js";
 
 //used in EmployeeProfile
 const markAttendance = async (req, res) => {
@@ -196,4 +197,152 @@ const updateAttendance = async (req, res) => {
     }
 };
 
-export { markAttendance, markLeave, getTodayAttendance, getAttendanceRecords, getAllAttendanceRecords, calculateSalary, updateAttendance }
+const generateTaskReport = async (req, res) => {
+    try {
+        const { date } = req.query;
+
+        console.log(date);
+
+        // Get all tasks for the specified date
+        const tasks = await scheduleModel.find({
+            date: date
+        }).populate('employeeId', 'name email');
+
+        // Group tasks by technician and category
+        const reportData = tasks.reduce((acc, task) => {
+            const techId = task.employeeId._id;
+            const techName = task.employeeId.name;
+            const taskType = task.taskType;
+
+            if (!acc[techId]) {
+                acc[techId] = {
+                    technicianName: techName,
+                    categories: {}
+                };
+            }
+
+            if (!acc[techId].categories[taskType]) {
+                acc[techId].categories[taskType] = 0;
+            }
+
+            acc[techId].categories[taskType]++;
+            return acc;
+        }, {});
+
+        // Format data for PDF template
+        const formattedData = Object.entries(reportData).map(([techId, data]) => ({
+            technicianName: data.technicianName,
+            categories: Object.entries(data.categories).map(([category, count]) => ({
+                name: category,
+                count: count
+            }))
+        }));
+
+        // Generate PDF
+        const pdfBuffer = await generateTaskReportPDF(formattedData, date);
+
+        // Set response headers for PDF download
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=task-report-${date}.pdf`);
+
+        // Send the PDF buffer
+        res.send(pdfBuffer);
+    } catch (error) {
+        console.error("Error generating task report:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error generating task report",
+            error: error.message
+        });
+    }
+};
+
+const generateAttendanceReport = async (req, res) => {
+    try {
+        const { month } = req.query;
+
+        if (!month) {
+            return res.status(400).json({ error: 'Month parameter is required in YYYY-MM format' });
+        }
+
+        // Parse the month string (YYYY-MM)
+        const [year, monthNum] = month.split('-').map(num => parseInt(num, 10));
+
+        if (isNaN(year) || isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+            return res.status(400).json({ error: 'Invalid month format. Use YYYY-MM' });
+        }
+
+        // Get all employees
+        const employees = await Employee.find().select('name employeeId');
+
+        // Get attendance records for the specified month and year
+        const startDate = new Date(year, monthNum - 1, 1);
+        const endDate = new Date(year, monthNum, 0);
+
+        // Format dates as YYYY-MM-DD strings for MongoDB query
+        const startDateStr = `${year}-${String(monthNum).padStart(2, '0')}-01`;
+        const endDateStr = `${year}-${String(monthNum).padStart(2, '0')}-${endDate.getDate()}`;
+
+        const attendanceRecords = await Attendance.find({
+            date: {
+                $gte: startDateStr,
+                $lte: endDateStr
+            }
+        }).populate('employeeId', 'name employeeId');
+
+        // Calculate attendance statistics for each employee
+        const employeeStats = employees.map(employee => {
+            const employeeRecords = attendanceRecords.filter(record =>
+                record.employeeId._id.toString() === employee._id.toString()
+            );
+
+            const presentDays = employeeRecords.filter(record => record.checkInTime && record.checkOutTime).length;
+            const absentDays = employeeRecords.filter(record => !record.checkInTime).length;
+            const lateDays = employeeRecords.filter(record => {
+                if (!record.checkInTime) return false;
+                const checkInTime = new Date(`2000-01-01T${record.checkInTime}`);
+                return checkInTime.getHours() >= 9; // Consider late if checked in after 9 AM
+            }).length;
+            const totalWorkingDays = endDate.getDate(); // Total days in the month
+            const attendanceRate = ((presentDays + lateDays) / totalWorkingDays * 100).toFixed(1);
+
+            return {
+                name: employee.name,
+                employeeId: employee.employeeId,
+                presentDays,
+                absentDays,
+                lateDays,
+                totalWorkingDays,
+                attendanceRate
+            };
+        });
+
+        // Prepare data for PDF generation
+        const pdfData = {
+            month: new Date(year, monthNum - 1).toLocaleString('default', { month: 'long' }),
+            year: year,
+            employees: employeeStats,
+            generatedDate: new Date().toLocaleString(),
+            currentYear: new Date().getFullYear()
+        };
+
+        // Generate PDF
+        const pdf = await generateAttendanceReportPDF(pdfData);
+
+        if (!pdf) {
+            throw new Error('Failed to generate PDF');
+        }
+
+        // Set response headers
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=attendance-report-${month}.pdf`);
+
+        // Send PDF
+        res.send(pdf);
+    } catch (error) {
+        console.error('Error generating attendance report:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export { generateAttendanceReport, markAttendance, markLeave, getTodayAttendance, getAttendanceRecords, getAllAttendanceRecords, calculateSalary, updateAttendance, generateTaskReport }

@@ -1,6 +1,7 @@
 import express from "express";
-import { markAttendance, markLeave, getTodayAttendance, getAttendanceRecords, getAllAttendanceRecords, calculateSalary, updateAttendance } from "../Controllers/attendenceController.js";
+import { generateAttendanceReport, markAttendance, markLeave, getTodayAttendance, getAttendanceRecords, getAllAttendanceRecords, calculateSalary, updateAttendance, generateTaskReport } from "../Controllers/attendenceController.js";
 import { authEmployee } from "../middleware/authEmployee.js";
+import authAdmin from "../middleware/authAdmin.js";
 
 const attendenceRouter = express.Router();
 
@@ -15,6 +16,8 @@ attendenceRouter.get("/records/:employeeId", authEmployee, getAttendanceRecords)
 
 // Admin routes
 attendenceRouter.get("/all", getAllAttendanceRecords);
+attendenceRouter.get("/task-report", generateTaskReport);
+attendenceRouter.get("/report", authAdmin, generateAttendanceReport);
 attendenceRouter.put("/:attendanceId", updateAttendance);
 attendenceRouter.get("/:id", getAttendanceRecords);
 
