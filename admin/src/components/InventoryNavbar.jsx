@@ -7,6 +7,7 @@ const InventoryNavbar = () => {
     const navigate = useNavigate();
     const { isAuthenticated, logout } = useAdminAuthStore();
     const [showMenu, setShowMenu] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const handleLogout = async () => {
         try {
@@ -15,6 +16,16 @@ const InventoryNavbar = () => {
         } catch (error) {
             console.error('Logout failed:', error);
         }
+    };
+
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            navigate(`/all-inventory?search=${encodeURIComponent(searchQuery.trim())}`);
+        } else {
+            navigate('/all-inventory');
+        }
+        setSearchQuery(''); // Clear the input field after submitting
     };
 
     return (
@@ -27,10 +38,31 @@ const InventoryNavbar = () => {
             />
             <ul className='hidden md:flex items-start gap-5 font-medium'>
                 <NavLink to='/'><li className='py-1'>Home</li></NavLink>
-                <NavLink to='/services'><li className='py-1'>ALL SERVICES</li></NavLink>
-                <NavLink to='/about'><li className='py-1'>ABOUT</li></NavLink>
-                <NavLink to='/contact'><li className='py-1'>CONTACT</li></NavLink>
+                <NavLink to='/all-inventory'><li className='py-1'>ALL INVENTORY</li></NavLink>
+                <NavLink to='/expiring-items'><li className='py-1'>EXPIRING ITEMS</li></NavLink>
+                <NavLink to='/low-stock'><li className='py-1'>LOW STOCK ITEMS</li></NavLink>
+                <NavLink to='/add-inventory'><li className='py-1'>ADD INVENTORY</li></NavLink>
+                <NavLink to='/ordered-items'><li className='py-1'>ORDERED ITEMS</li></NavLink>
+                <NavLink to='/stock-management'><li className='py-1'>STOCK MANAGEMENT</li></NavLink>
             </ul>
+
+            {/* Search Form */}
+            <form onSubmit={handleSearchSubmit} className="hidden md:flex items-center gap-2">
+                <input
+                    type="text"
+                    placeholder="Search inventory..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="border px-3 py-2 rounded-md text-sm"
+                />
+                <button
+                    type="submit"
+                    className="bg-blue-500 text-white px-4 py-2 rounded-md text-sm"
+                >
+                    Search
+                </button>
+            </form>
+
             <div className='flex items-center gap-4'>
                 {isAuthenticated ? (
                     <button

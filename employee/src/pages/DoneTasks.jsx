@@ -21,7 +21,7 @@ const DoneTasks = () => {
       
       if (response.data.success) {
         // Filter only completed tasks
-        const completedTasks = response.data.bookings.filter(task => task.status === 'done');
+        const completedTasks = response.data.bookings.filter(task => task.status === 'done' || task.status === 'billed');
         setTasks(completedTasks);
       }
     } catch (error) {
@@ -73,7 +73,7 @@ const DoneTasks = () => {
                       <FaCar className="text-gray-400 mr-2" />
                       <div>
                         <p className="text-sm text-gray-500">Vehicle</p>
-                        <p className="font-medium">{task.vehicleNumPlate || 'N/A'}</p>
+                        <p className="font-medium">{task.vehicleId?.plateNumber || 'N/A'}</p>
                       </div>
                     </div>
                     

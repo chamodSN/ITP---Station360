@@ -3,7 +3,7 @@ import { assets } from '../assets/assets';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAdminAuthStore } from '../store/authAdmin';
 
-const ScheduleNavbar = () => {
+const AttendenceNavBar = () => {
     const navigate = useNavigate();
     const { isAuthenticated, logout } = useAdminAuthStore();
     const [showMenu, setShowMenu] = useState(false);
@@ -26,10 +26,10 @@ const ScheduleNavbar = () => {
                 alt='logo'
             />
             <ul className='hidden md:flex items-start gap-5 font-medium'>
-                <NavLink to='/'><li className='py-1'>Home</li></NavLink>
-                <NavLink to='/tasks/assign'><li className='py-1'>ASSIGN A TASK</li></NavLink>
-                <NavLink to='/tasks/assigned'><li className='py-1'>ASSIGNED TASKS</li></NavLink>
-                <NavLink to='/contact'><li className='py-1'>CONTACT</li></NavLink>
+                <NavLink to='/'><li className='py-1'>HOME</li></NavLink>
+                <NavLink to='/admin-attendance'><li className='py-1'>TODAY ATTENDENCE</li></NavLink>
+                <NavLink to='/leave-requests'><li className='py-1'>LEAVE REQUESTS</li></NavLink>
+                <NavLink to='/attendance-records'><li className='py-1'>ATTENDENCE RECORDS</li></NavLink>
             </ul>
             <div className='flex items-center gap-4'>
                 {isAuthenticated ? (
@@ -58,4 +58,4 @@ const ScheduleNavbar = () => {
     );
 };
 
-export default ScheduleNavbar;
+export default AttendenceNavBar;

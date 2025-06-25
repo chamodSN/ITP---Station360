@@ -1,5 +1,5 @@
 import pdf from 'html-pdf';
-import { DAILY_APPOINTMENTS_TEMPLATE, USER_REPORT_TEMPLATE } from './pdfTemplate.js';
+import { DAILY_APPOINTMENTS_TEMPLATE, USER_REPORT_TEMPLATE, TASK_REPORT_TEMPLATE, INVENTORY_STOCK_TEMPLATE, SALARY_SLIP_TEMPLATE, ATTENDANCE_REPORT_TEMPLATE } from './pdfTemplate.js';
 
 export const generateDailyAppointmentsPDF = async (appointments, date) => {
     try {
@@ -69,18 +69,183 @@ export const generateDailyAppointmentsPDF = async (appointments, date) => {
     }
 };
 
-export const generateUserReportPDF = (users, startDate, endDate) => {
-    return new Promise((resolve, reject) => {
-        const html = userReportTemplate(users, startDate, endDate);
-        const options = { format: 'A4' };
 
-        pdf.create(html, options).toStream((err, stream) => {
-            if (err) {
-                return reject(err);
+// Generate User Report PDF
+export const generateUserReportPDF = async (data) => {
+    try {
+        console.log('Generating user report PDF with data:', data);
+        
+        // Generate HTML using the template
+        const html = USER_REPORT_TEMPLATE(data);
+        
+        // PDF options
+        const options = {
+            format: 'A4',
+            border: {
+                top: '0.5in',
+                right: '0.5in',
+                bottom: '0.5in',
+                left: '0.5in'
             }
-            resolve(stream);
+        };
+
+        // Generate PDF
+        return new Promise((resolve, reject) => {
+            pdf.create(html, options).toBuffer((err, buffer) => {
+                if (err) {
+                    console.error("PDF generation error:", err);
+                    reject(err);
+                } else {
+                    console.log("User report PDF generated successfully");
+                    resolve(buffer);
+                }
+            });
         });
-    });
+    } catch (error) {
+        console.error("Error in generateUserReportPDF:", error);
+        throw new Error(`Failed to generate user report PDF: ${error.message}`);
+    }
+};
+
+export const generateTaskReportPDF = async (data, date) => {
+    try {
+        // Format technicians data for the template
+        const techniciansHtml = data.map(tech => `
+            <div class="technician">
+                <div class="technician-name">Technician: ${tech.technicianName}</div>
+                <table>
+                    <tr>
+                        <th>Category</th>
+                        <th>Number of Tasks</th>
+                    </tr>
+                    ${tech.categories.map(cat => `
+                        <tr>
+                            <td>${cat.name}</td>
+                            <td>${cat.count}</td>
+                        </tr>
+                    `).join('')}
+                </table>
+            </div>
+        `).join('');
+
+        // Get current date and year for footer
+        const now = new Date();
+        const generatedDate = now.toLocaleDateString();
+        const currentYear = now.getFullYear();
+
+        // Create template data object
+        const templateData = {
+            date: new Date(date).toLocaleDateString(),
+            technicians: techniciansHtml,
+            generatedDate: generatedDate,
+            currentYear: currentYear
+        };
+
+        // Generate HTML using the template function
+        const html = TASK_REPORT_TEMPLATE(templateData);
+
+        // PDF options
+        const options = {
+            format: 'A4',
+            border: {
+                top: '0.5in',
+                right: '0.5in',
+                bottom: '0.5in',
+                left: '0.5in'
+            }
+        };
+
+        // Generate PDF
+        return new Promise((resolve, reject) => {
+            pdf.create(html, options).toBuffer((err, buffer) => {
+                if (err) {
+                    console.error("PDF generation error:", err);
+                    reject(err);
+                } else {
+                    console.log("Task report PDF generated successfully");
+                    resolve(buffer);
+                }
+            });
+        });
+    } catch (error) {
+        console.error("Error in generateTaskReportPDF:", error);
+        throw new Error(`Failed to generate PDF: ${error.message}`);
+    }
+};
+
+export const generateInventoryStockPDF = async (inventory) => {
+    try {
+        const LOW_STOCK_THRESHOLD = 15; // Default threshold for low stock
+
+        // Calculate summary statistics
+        const totalItems = inventory.length;
+        const totalValue = inventory.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+        const lowStockCount = inventory.filter(item => item.quantity <= LOW_STOCK_THRESHOLD).length;
+
+        // Format inventory items for the template
+        const inventoryItems = inventory.map(item => {
+            const itemTotalValue = (item.quantity || 0) * (item.unitPrice || 0);
+            return `
+                <tr>
+                    <td>${item.name || 'N/A'}</td>
+                    <td>${item.brand || 'N/A'}</td>
+                    <td>${item.itemType || 'N/A'}</td>
+                    <td>${item.quantity || 0}</td>
+                    <td>${item.unitType || 'N/A'}</td>
+                    <td>$${(item.unitPrice || 0).toFixed(2)}</td>
+                    <td>$${itemTotalValue.toFixed(2)}</td>
+                    <td class="${(item.quantity || 0) <= LOW_STOCK_THRESHOLD ? 'low-stock' : ''}">
+                        ${(item.quantity || 0) <= LOW_STOCK_THRESHOLD ? 'Low Stock' : 'In Stock'}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        // Get current date and year for footer
+        const now = new Date();
+        const generatedDate = now.toLocaleDateString();
+        const currentYear = now.getFullYear();
+
+        // Create template data object
+        const templateData = {
+            totalItems: totalItems,
+            totalValue: totalValue,
+            lowStockCount: lowStockCount,
+            inventoryItems: inventoryItems,
+            generatedDate: generatedDate,
+            currentYear: currentYear
+        };
+
+        // Generate HTML using the template function
+        const html = INVENTORY_STOCK_TEMPLATE(templateData);
+
+        // PDF options
+        const options = {
+            format: 'A4',
+            border: {
+                top: '0.5in',
+                right: '0.5in',
+                bottom: '0.5in',
+                left: '0.5in'
+            }
+        };
+
+        // Generate PDF
+        return new Promise((resolve, reject) => {
+            pdf.create(html, options).toBuffer((err, buffer) => {
+                if (err) {
+                    console.error("PDF generation error:", err);
+                    reject(err);
+                } else {
+                    console.log("Inventory stock PDF generated successfully");
+                    resolve(buffer);
+                }
+            });
+        });
+    } catch (error) {
+        console.error("Error in generateInventoryStockPDF:", error);
+        throw new Error(`Failed to generate PDF: ${error.message}`);
+    }
 };
 
 export const generateSalarySlipPDF = async (employeeData) => {
@@ -145,5 +310,41 @@ export const generateSalarySlipPDF = async (employeeData) => {
     } catch (error) {
         console.error('Error in generateSalarySlipPDF:', error);
         throw error;
+    }
+};
+
+export const generateAttendanceReportPDF = async (data) => {
+    try {
+        console.log('Generating attendance report PDF with data:', data);
+        
+        // Generate HTML using the template
+        const html = ATTENDANCE_REPORT_TEMPLATE(data);
+        
+        // PDF options
+        const options = {
+            format: 'A4',
+            border: {
+                top: '0.5in',
+                right: '0.5in',
+                bottom: '0.5in',
+                left: '0.5in'
+            }
+        };
+
+        // Generate PDF
+        return new Promise((resolve, reject) => {
+            pdf.create(html, options).toBuffer((err, buffer) => {
+                if (err) {
+                    console.error("PDF generation error:", err);
+                    reject(err);
+                } else {
+                    console.log("Attendance report PDF generated successfully");
+                    resolve(buffer);
+                }
+            });
+        });
+    } catch (error) {
+        console.error("Error in generateAttendanceReportPDF:", error);
+        throw new Error(`Failed to generate attendance report PDF: ${error.message}`);
     }
 };

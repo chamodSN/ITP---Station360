@@ -9,7 +9,7 @@ function Notification() {
   const [isEdit, setIsEdit] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
-  const Navigate = useNavigate();
+  const navigate = useNavigate();
 
   const getPriorityColor = (priority) => {
     switch (priority) {
@@ -79,7 +79,7 @@ function Notification() {
         const { data } = await axios.delete(`http://localhost:4200/api/admin/notification/${id}`);
         if (data.success) {
           toast.success("Notification deleted successfully");
-          Navigate('/all-notifications')
+          navigate("/all-notifications");
         } else {
           toast.error(data.message || "Failed to delete notification");
         }
@@ -94,15 +94,6 @@ function Notification() {
     fetchNotification();
   }, [id]);
 
-  const formatDateTime = (isoString) => {
-    const dateObj = new Date(isoString);
-    const date = dateObj.toLocaleDateString('en-GB'); 
-    const time = dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    return { date, time };
-  };
-
-  const formattedDateTime = Notification ? formatDateTime(Notification.updatedAt) : { date: '', time: '' };
-
   return (
     Notification && (
       <div
@@ -113,8 +104,6 @@ function Notification() {
       >
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-gray-800">Edit Notification</h2>
-          <div className="flex items-center">
-          </div>
         </div>
 
         <div className="mb-4">
@@ -197,8 +186,8 @@ function Notification() {
         </div>
 
         <div className="mb-4">
-          <p className="text-gray-500">Date: {formattedDateTime.date}</p>
-          <p className="text-gray-500">Time: {formattedDateTime.time}</p>
+          <p className="text-gray-500">Date: {Notification.Date}</p>
+          <p className="text-gray-500">Time: {Notification.Time}</p>
         </div>
 
         <div className="space-y-2">
