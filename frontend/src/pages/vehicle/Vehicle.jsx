@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { assets } from '../../assets/assets';
 
 const Vehicle = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [vehicle, setVehicle] = useState(null);
     const [isEdit, setIsEdit] = useState(false);
     const [image, setImage] = useState(null);
@@ -23,92 +25,165 @@ const Vehicle = () => {
         fetchVehicle();
     }, [id]);
 
+    const validateInputs = () => {
+        const alphanumericRegex = /^[a-zA-Z0-9\s-]+$/;
+
+        if (!vehicle.plateNumber || !alphanumericRegex.test(vehicle.plateNumber)) {
+            toast.error("Plate number should only contain letters, numbers, spaces, or hyphens.");
+            return false;
+        }
+
+        if (image) {
+            const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+            if (!allowedTypes.includes(image.type)) {
+                toast.error("Only PNG and JPG images are allowed.");
+                return false;
+            }
+        }
+
+        return true;
+    };
+
     const updateVehicle = async () => {
+        if (!validateInputs()) return;
+
         try {
-            console.log(vehicle);
             const formData = new FormData();
-
-            formData.append("Image", vehicle.Image);
-            formData.append("brandName", vehicle.brandName);
-            formData.append("modelName", vehicle.modelName);
-            formData.append("vinNumber", vehicle.vinNumber);
             formData.append("plateNumber", vehicle.plateNumber);
-            formData.append("fuelType", vehicle.fuelType);
-
             if (image) {
-                formData.append("Image", image);
+                formData.append("image", image);
             }
 
-            console.log(formData);
-
-            const { data } = await axios.put(`http://localhost:4200/api/user/update-vehicle/${id}`, formData);
-            console.log('data', data);
+            const { data } = await axios.put(
+                `http://localhost:4200/api/user/update-vehicle/${id}`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                    withCredentials: true,
+                }
+            );
 
             if (data.success) {
-                toast.success("Vehicle Updated Successfully");
+                toast.success("Vehicle updated successfully!");
                 setIsEdit(false);
+                setImage(null);
             } else {
                 toast.error(data.message);
             }
         } catch (error) {
-            console.log("Error updating image:", error);
+            console.error("Error updating vehicle:", error);
+            toast.error("Failed to update vehicle.");
         }
     };
 
     const deleteVehicle = async () => {
-        try {
-            const { data } = await axios.delete(`http://localhost:4200/api/user/vehicle/${id}`);
-            if (data.success) {
-                toast.success("Vehicle Deleted Successfully");
-            } else {
-                toast.error(data.message);
+        if (window.confirm('Are you sure you want to delete this vehicle?')) {
+            try {
+                const { data } = await axios.delete(`http://localhost:4200/api/user/vehicle/${id}`, {
+                    withCredentials: true
+                });
+
+                if (data.success) {
+                    toast.success("Vehicle deleted successfully!");
+                    navigate('/my-profile');
+                } else {
+                    toast.error(data.message);
+                }
+            } catch (error) {
+                console.error("Error deleting vehicle:", error);
+                toast.error("Failed to delete vehicle.");
             }
-        } catch (error) {
-            console.error("Error updating image:", error);
         }
     };
 
     return vehicle && (
-        <div className="max-w-lg mx-auto p-6 bg-white shadow-lg rounded-lg">
-            <h1 className="text-2xl font-bold mb-4 text-center">Vehicle Details</h1>
-            <p className="text-lg font-semibold">{vehicle.brandName}</p>
-            <p className="text-gray-600">{vehicle.modelName}</p>
-            <p className="text-gray-500">VIN: {vehicle.vinNumber}</p>
-            <p className="text-gray-500">Plate: {vehicle.plateNumber}</p>
-            <p className="text-gray-500">Fuel: {vehicle.fuelType}</p>
+        <div className="min-h-screen bg-gray-50 p-8">
+            <div className="max-w-2xl mx-auto">
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div className="relative">
+                        {!isEdit ? (
+                            vehicle.Image ? (
+                                <img
+                                    src={vehicle.Image}
+                                    alt="Vehicle"
+                                    className="w-full h-64 object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-64 bg-gray-100 flex items-center justify-center">
+                                    <img
+                                        src={assets.upload_icon}
+                                        alt="No Image"
+                                        className="w-16 h-16 opacity-50"
+                                    />
+                                </div>
+                            )
+                        ) : (
+                            <div className="relative">
+                                <img
+                                    src={image ? URL.createObjectURL(image) : vehicle.Image || assets.upload_icon}
+                                    alt="Vehicle"
+                                    className="w-full h-64 object-cover"
+                                />
+                                <label
+                                    htmlFor="vehicle-image"
+                                    className="absolute bottom-4 right-4 bg-primary text-white p-2 rounded-full cursor-pointer hover:bg-primary/90"
+                                >
+                                    <img src={assets.upload_icon} alt="Upload" className="w-5 h-5" />
+                                    <input
+                                        type="file"
+                                        id="vehicle-image"
+                                        accept="image/png, image/jpeg"
+                                        hidden
+                                        onChange={(e) => setImage(e.target.files[0])}
+                                    />
+                                </label>
+                            </div>
+                        )}
+                    </div>
 
-            {!isEdit ? (
-                <img src={vehicle.Image} alt={vehicle.brandName} className="mt-4 w-full h-40 object-cover rounded-lg" />
-            ) : (
-                <input 
-                    type="file" 
-                    onChange={(e) => setImage(e.target.files[0])} 
-                    className="mt-2 w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-            )}
+                    <div className="p-6 space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-600">Plate Number</label>
+                            {isEdit ? (
+                                <input
+                                    type="text"
+                                    value={vehicle.plateNumber}
+                                    onChange={(e) => setVehicle(prev => ({ ...prev, plateNumber: e.target.value }))}
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+                                />
+                            ) : (
+                                <p className="mt-1 text-gray-800">{vehicle.plateNumber}</p>
+                            )}
+                        </div>
 
-            <div className="mt-4 flex space-x-4">
-                {isEdit ? (
-                    <button 
-                        onClick={() => updateVehicle()} 
-                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-300"
-                    >
-                        Save
-                    </button>
-                ) : (
-                    <button 
-                        onClick={() => setIsEdit(!isEdit)} 
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300"
-                    >
-                        Edit
-                    </button>
-                )}
-                <button 
-                    onClick={() => deleteVehicle()} 
-                    className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition duration-300"
-                >
-                    Delete
-                </button>
+
+                        <div className="flex gap-4 mt-6">
+                            {isEdit ? (
+                                <button
+                                    onClick={updateVehicle}
+                                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all"
+                                >
+                                    Save Changes
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => setIsEdit(true)}
+                                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all"
+                                >
+                                    Edit Vehicle
+                                </button>
+                            )}
+                            <button
+                                onClick={deleteVehicle}
+                                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all"
+                            >
+                                Delete Vehicle
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
