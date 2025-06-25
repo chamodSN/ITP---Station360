@@ -1,5 +1,5 @@
 import pdf from 'html-pdf';
-import { DAILY_APPOINTMENTS_TEMPLATE, USER_REPORT_TEMPLATE } from './pdfTemplate.js';
+import { DAILY_APPOINTMENTS_TEMPLATE, USER_REPORT_TEMPLATE, TASK_REPORT_TEMPLATE, INVENTORY_STOCK_TEMPLATE, SALARY_SLIP_TEMPLATE, ATTENDANCE_REPORT_TEMPLATE } from './pdfTemplate.js';
 
 export const generateDailyAppointmentsPDF = async (appointments, date) => {
     try {
@@ -69,18 +69,108 @@ export const generateDailyAppointmentsPDF = async (appointments, date) => {
     }
 };
 
-export const generateUserReportPDF = (users, startDate, endDate) => {
-    return new Promise((resolve, reject) => {
-        const html = userReportTemplate(users, startDate, endDate);
-        const options = { format: 'A4' };
 
-        pdf.create(html, options).toStream((err, stream) => {
-            if (err) {
-                return reject(err);
+// Generate User Report PDF
+export const generateUserReportPDF = async (data) => {
+    try {
+        console.log('Generating user report PDF with data:', data);
+        
+        // Generate HTML using the template
+        const html = USER_REPORT_TEMPLATE(data);
+        
+        // PDF options
+        const options = {
+            format: 'A4',
+            border: {
+                top: '0.5in',
+                right: '0.5in',
+                bottom: '0.5in',
+                left: '0.5in'
             }
-            resolve(stream);
+        };
+
+        // Generate PDF
+        return new Promise((resolve, reject) => {
+            pdf.create(html, options).toBuffer((err, buffer) => {
+                if (err) {
+                    console.error("PDF generation error:", err);
+                    reject(err);
+                } else {
+                    console.log("User report PDF generated successfully");
+                    resolve(buffer);
+                }
+            });
         });
-    });
+    } catch (error) {
+        console.error("Error in generateUserReportPDF:", error);
+        throw new Error(`Failed to generate user report PDF: ${error.message}`);
+    }
+};
+
+export const generateTaskReportPDF = async (data, date) => {
+    try {
+        // Format technicians data for the template
+        const techniciansHtml = data.map(tech => `
+            <div class="technician">
+                <div class="technician-name">Technician: ${tech.technicianName}</div>
+                <table>
+                    <tr>
+                        <th>Category</th>
+                        <th>Number of Tasks</th>
+                    </tr>
+                    ${tech.categories.map(cat => `
+                        <tr>
+                            <td>${cat.name}</td>
+                            <td>${cat.count}</td>
+                        </tr>
+                    `).join('')}
+                </table>
+            </div>
+        `).join('');
+
+        // Get current date and year for footer
+        const now = new Date();
+        const generatedDate = now.toLocaleDateString();
+        const currentYear = now.getFullYear();
+
+        // Create template data object
+        const templateData = {
+            date: new Date(date).toLocaleDateString(),
+            technicians: techniciansHtml,
+            generatedDate: generatedDate,
+            currentYear: currentYear
+        };
+
+        // Generate HTML using the template function
+        const html = TASK_REPORT_TEMPLATE(templateData);
+
+        // PDF options
+        const options = {
+            format: 'A4',
+            border: {
+                top: '0.5in',
+                right: '0.5in',
+                bottom: '0.5in',
+                left: '0.5in'
+            }
+        };
+
+        // Generate PDF
+        return new Promise((resolve, reject) => {
+            pdf.create(html, options).toBuffer((err, buffer) => {
+                if (err) {
+                    console.error("PDF generation error:", err);
+                    reject(err);
+                } else {
+                    console.log("Task report PDF generated successfully");
+                    resolve(buffer);
+                }
+            });
+        });
+    } catch (error) {
+        console.error("Error in generateTaskReportPDF:", error);
+        throw new Error(`Failed to generate PDF: ${error.message}`);
+    }
 };
 
 export const generateInventoryStockPDF = async (inventory) => {
@@ -158,6 +248,71 @@ export const generateInventoryStockPDF = async (inventory) => {
     }
 };
 
+export const generateSalarySlipPDF = async (employeeData) => {
+    try {
+        console.log('Starting PDF generation with data:', employeeData);
+
+        // Validate only essential fields
+        const requiredFields = ['employeeName'];
+        const missingFields = requiredFields.filter(field => !employeeData[field]);
+        
+        if (missingFields.length > 0) {
+            throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+        }
+
+        // Prepare template data with default values for optional fields
+        const templateData = {
+            ...employeeData,
+            employeeId: employeeData.employeeId || 'N/A',
+            department: employeeData.department || 'N/A',
+            position: employeeData.position || 'N/A',
+            generatedDate: new Date().toLocaleDateString(),
+            currentYear: new Date().getFullYear(),
+            // Ensure numeric values are properly formatted
+            basicSalary: Number(employeeData.basicSalary || 0),
+            allowances: Number(employeeData.allowances || 0),
+            overtime: Number(employeeData.overtime || 0),
+            deductions: Number(employeeData.deductions || 0),
+            netSalary: Number(employeeData.netSalary || 0),
+            totalHours: Number(employeeData.totalHours || 0),
+            totalDays: Number(employeeData.totalDays || 0)
+        };
+
+        console.log('Prepared template data:', templateData);
+
+        // Generate HTML using template
+        const html = SALARY_SLIP_TEMPLATE(templateData);
+        console.log('Generated HTML template');
+
+        // PDF options
+        const options = {
+            format: 'A4',
+            border: {
+                top: '20px',
+                right: '20px',
+                bottom: '20px',
+                left: '20px'
+            }
+        };
+
+        // Generate PDF
+        return new Promise((resolve, reject) => {
+            pdf.create(html, options).toBuffer((err, buffer) => {
+                if (err) {
+                    console.error('PDF generation error:', err);
+                    reject(err);
+                } else {
+                    console.log('PDF generated successfully, buffer size:', buffer.length);
+                    resolve(buffer);
+                }
+            });
+        });
+    } catch (error) {
+        console.error('Error in generateSalarySlipPDF:', error);
+        throw error;
+    }
+};
+
 export const generateAttendanceReportPDF = async (data) => {
     try {
         console.log('Generating attendance report PDF with data:', data);
@@ -191,71 +346,5 @@ export const generateAttendanceReportPDF = async (data) => {
     } catch (error) {
         console.error("Error in generateAttendanceReportPDF:", error);
         throw new Error(`Failed to generate attendance report PDF: ${error.message}`);
-    }
-};
-
-export const generateTaskReportPDF = async (data, date) => {
-    try {
-        // Format technicians data for the template
-        const techniciansHtml = data.map(tech => `
-            <div class="technician">
-                <div class="technician-name">Technician: ${tech.technicianName}</div>
-                <table>
-                    <tr>
-                        <th>Category</th>
-                        <th>Number of Tasks</th>
-                    </tr>
-                    ${tech.categories.map(cat => `
-                        <tr>
-                            <td>${cat.name}</td>
-                            <td>${cat.count}</td>
-                        </tr>
-                    `).join('')}
-                </table>
-            </div>
-        `).join('');
-
-        // Get current date and year for footer
-        const now = new Date();
-        const generatedDate = now.toLocaleDateString();
-        const currentYear = now.getFullYear();
-
-        // Create template data object
-        const templateData = {
-            date: new Date(date).toLocaleDateString(),
-            technicians: techniciansHtml,
-            generatedDate: generatedDate,
-            currentYear: currentYear
-        };
-
-        // Generate HTML using the template function
-        const html = TASK_REPORT_TEMPLATE(templateData);
-
-        // PDF options
-        const options = {
-            format: 'A4',
-            border: {
-                top: '0.5in',
-                right: '0.5in',
-                bottom: '0.5in',
-                left: '0.5in'
-            }
-        };
-
-        // Generate PDF
-        return new Promise((resolve, reject) => {
-            pdf.create(html, options).toBuffer((err, buffer) => {
-                if (err) {
-                    console.error("PDF generation error:", err);
-                    reject(err);
-                } else {
-                    console.log("Task report PDF generated successfully");
-                    resolve(buffer);
-                }
-            });
-        });
-    } catch (error) {
-        console.error("Error in generateTaskReportPDF:", error);
-        throw new Error(`Failed to generate PDF: ${error.message}`);
     }
 };
