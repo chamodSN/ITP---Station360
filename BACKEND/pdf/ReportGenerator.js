@@ -82,3 +82,68 @@ export const generateUserReportPDF = (users, startDate, endDate) => {
         });
     });
 };
+
+export const generateSalarySlipPDF = async (employeeData) => {
+    try {
+        console.log('Starting PDF generation with data:', employeeData);
+
+        // Validate only essential fields
+        const requiredFields = ['employeeName'];
+        const missingFields = requiredFields.filter(field => !employeeData[field]);
+        
+        if (missingFields.length > 0) {
+            throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+        }
+
+        // Prepare template data with default values for optional fields
+        const templateData = {
+            ...employeeData,
+            employeeId: employeeData.employeeId || 'N/A',
+            department: employeeData.department || 'N/A',
+            position: employeeData.position || 'N/A',
+            generatedDate: new Date().toLocaleDateString(),
+            currentYear: new Date().getFullYear(),
+            // Ensure numeric values are properly formatted
+            basicSalary: Number(employeeData.basicSalary || 0),
+            allowances: Number(employeeData.allowances || 0),
+            overtime: Number(employeeData.overtime || 0),
+            deductions: Number(employeeData.deductions || 0),
+            netSalary: Number(employeeData.netSalary || 0),
+            totalHours: Number(employeeData.totalHours || 0),
+            totalDays: Number(employeeData.totalDays || 0)
+        };
+
+        console.log('Prepared template data:', templateData);
+
+        // Generate HTML using template
+        const html = SALARY_SLIP_TEMPLATE(templateData);
+        console.log('Generated HTML template');
+
+        // PDF options
+        const options = {
+            format: 'A4',
+            border: {
+                top: '20px',
+                right: '20px',
+                bottom: '20px',
+                left: '20px'
+            }
+        };
+
+        // Generate PDF
+        return new Promise((resolve, reject) => {
+            pdf.create(html, options).toBuffer((err, buffer) => {
+                if (err) {
+                    console.error('PDF generation error:', err);
+                    reject(err);
+                } else {
+                    console.log('PDF generated successfully, buffer size:', buffer.length);
+                    resolve(buffer);
+                }
+            });
+        });
+    } catch (error) {
+        console.error('Error in generateSalarySlipPDF:', error);
+        throw error;
+    }
+};
