@@ -78,7 +78,7 @@ const Navbar = () => {
 
   const formatDateTime = (isoString) => {
     const dateObj = new Date(isoString);
-    return dateObj.toLocaleDateString('en-GB', { 
+    return dateObj.toLocaleDateString('en-GB', {
       day: 'numeric',
       month: 'short',
       hour: '2-digit',
@@ -87,7 +87,7 @@ const Navbar = () => {
   };
 
   return (
-    <div className='ml-4 mr-4 flex items-center justify-between text-sm py-4 mb-5 border-b border-b-gray-400'>
+    <div className='ml-4 mr-4 flex items-center justify-between text-sm py-4 border-b border-b-gray-400'>
       <img onClick={() => navigate('/')} className='w-32 cursor-pointer' src={assets.logo} alt='logo' />
       <ul className='hidden md:flex items-start gap-5 font-medium'>
         <NavLink to='/'>
@@ -129,7 +129,7 @@ const Navbar = () => {
         {isAuthenticated ? (
           <div className='flex items-center gap-4'>
             <div className="relative">
-              <button 
+              <button
                 className='relative'
                 onClick={handleNotificationsClick}
               >
@@ -140,7 +140,7 @@ const Navbar = () => {
                   </span>
                 )}
               </button>
-              
+
               {showNotifications && (
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                   <div className="p-3 border-b border-gray-200">

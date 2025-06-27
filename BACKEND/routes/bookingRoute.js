@@ -1,5 +1,8 @@
 import express, { Router } from 'express'
-import { bookService, displayTimeslots, displayUserBookings, cancelBooking, getAllBookings, cancelBookingByAdmin, getDailyAppointments, getVehicleServiceHistory } from '../Controllers/bookingController.js';
+import {
+    bookService, displayTimeslots, displayUserBookings, cancelBooking,
+    getAllBookings, cancelBookingByAdmin, getDailyAppointments, getVehicleServiceHistory, markBookingAsNoShow
+} from '../Controllers/bookingController.js';
 import { authUser } from "../middleware/authUser.js";
 import authAdmin from '../middleware/authAdmin.js';
 
@@ -13,5 +16,5 @@ bookingRoute.get('/admin/bookings', authUser, getAllBookings)
 bookingRoute.delete('/admin/cancelbooking/:bookingId', authAdmin, cancelBookingByAdmin)
 bookingRoute.get('/daily-appointments', getDailyAppointments)
 bookingRoute.get('/vehicle-history/:vehicleId', getVehicleServiceHistory)
-
+bookingRoute.put('/admin/markAsNoShow/:bookingId', authAdmin, markBookingAsNoShow)
 export default bookingRoute

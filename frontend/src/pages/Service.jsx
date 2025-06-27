@@ -33,8 +33,8 @@ const sriLankaHolidays = [
     '2025-11-05', // Il Full Moon Poya Day
     '2025-12-04', // Unduvap Full Moon Poya Day
     '2025-12-25', // Christmas Day
-  ];
-  
+];
+
 
 const Service = () => {
     const { id } = useParams();
@@ -55,11 +55,11 @@ const Service = () => {
 
     const getAvailableSlots = async () => {
         if (!selectedDate) return;
-        
+
         // Check if selected date is a holiday
         const isSelectedDateHoliday = sriLankaHolidays.includes(selectedDate);
         setIsHoliday(isSelectedDateHoliday);
-        
+
         if (isSelectedDateHoliday) {
             setAvailableSlots([]);
             return;
@@ -79,7 +79,7 @@ const Service = () => {
 
     const bookService = async (e) => {
         e.preventDefault();
-        
+
         if (!vehicleId) {
             toast.error("Please select a vehicle first");
             return;
@@ -168,9 +168,9 @@ const Service = () => {
                             {/* Image Section */}
                             <div className="space-y-6">
                                 <div className="relative w-full h-[500px] rounded-xl overflow-hidden shadow-xl">
-                                    <img 
-                                        src={service.displayImage} 
-                                        alt={service.serviceName} 
+                                    <img
+                                        src={service.displayImage}
+                                        alt={service.serviceName}
                                         className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
                                     />
                                 </div>
@@ -208,6 +208,12 @@ const Service = () => {
                         {/* Booking Section */}
                         <div className="mt-8">
                             <h2 className="text-2xl font-bold text-gray-900 mb-6">Book Your Appointment</h2>
+                            {!service.available && (
+                                <div className="text-red-600 font-semibold text-center mb-4">
+                                    This service is currently not available for booking.
+                                </div>
+                            )}
+
                             <form onSubmit={bookService} className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {/* Vehicle Selection */}
@@ -218,7 +224,8 @@ const Service = () => {
                                         <select
                                             value={vehicleId}
                                             onChange={(e) => setVehicleId(e.target.value)}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"                         
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                            disabled={!service.available}
                                         >
                                             <option value="">-- Select Vehicle --</option>
                                             {userVehicles.map((vehicle) => (
@@ -241,6 +248,7 @@ const Service = () => {
                                             min={new Date().toISOString().split('T')[0]}
                                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                             required
+                                            disabled={!service.available}
                                         />
                                     </div>
                                 </div>
@@ -266,11 +274,10 @@ const Service = () => {
                                                         key={slot}
                                                         type="button"
                                                         onClick={() => setSelectedTime(slot)}
-                                                        className={`p-3 rounded-lg border-2 transition-colors ${
-                                                            selectedTime === slot
-                                                                ? 'border-primary bg-primary/10 text-primary'
-                                                                : 'border-gray-200 hover:border-primary'
-                                                        }`}
+                                                        className={`p-3 rounded-lg border-2 transition-colors ${selectedTime === slot
+                                                            ? 'border-primary bg-primary/10 text-primary'
+                                                            : 'border-gray-200 hover:border-primary'
+                                                            }`}
                                                     >
                                                         {slot}
                                                     </button>
