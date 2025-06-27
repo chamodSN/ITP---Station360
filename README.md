@@ -2,6 +2,8 @@
 
 A comprehensive **MERN stack** web application developed as a second-year, second-semester ITP project at **SLIIT**. Station360 provides vehicle service management functionality with separate dashboards for Admin, Employees, and Users.
 
+![Image](https://github.com/user-attachments/assets/b9c65b14-7eea-4b3d-9951-7ba716741b85)
+
 ---
 
 ## 👥 Team Members & Responsibilities
