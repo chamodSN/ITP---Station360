@@ -54,6 +54,7 @@ A comprehensive **MERN stack** web application developed as a second-year, secon
 - Users can:
   - Select service, vehicle, preferred date, and time slot.
   - Receive booking confirmation via email.
+  - See vehicle service history
 - Admin dashboard:
   - Booking categories: Upcoming, Completed, Late.
   - Bookings are locked after a deadline.
@@ -91,6 +92,12 @@ A comprehensive **MERN stack** web application developed as a second-year, secon
 - **Admin Dashboard:** Bookings, Inventory, Salaries, Incomes/Expenses with Pie/Bar/Line Charts
 - **Employee Dashboard:** Attendance, Work Assignments
 - **User Dashboard:** Vehicle info, Bookings, Notifications, Vehicle Service History
+
+---
+
+## Mongodb Database Model
+
+![Image](https://github.com/user-attachments/assets/5b85b886-3152-4d72-ae69-fe55e4f2fdee)
 
 ---
 
@@ -182,9 +189,12 @@ npm run dev
 cd ../BACKEND
 npm start server
 ```
-## ✅ Features Summary
 
 ---
+
+
+## ✅ Features Summary
+
 
 ### 🔒 Secure Authentication with Email Verification
 ### 📅 Smart Time Slot Generation for Bookings
@@ -195,10 +205,9 @@ npm start server
 ### 📈 Visual Dashboards with Charts
 ### 📄 PDF Report Generation
 
+---
 
 ## 📬 Contact
-
----
 
 
 Created as a part of the **SLIIT ITP** module.  
