@@ -23,7 +23,7 @@ A comprehensive **MERN stack** web application developed as a second-year, secon
 - **Frontend:** React.js (Three separate UIs – Admin, Employee, User)
 - **Backend:** Node.js, Express.js
 - **Database:** MongoDB
-- **Other:** Cloudinary, EmailJS, Nodemailer, Puppeteer, Chart.js, PDF generation, Cron Jobs
+- **Other:** Cloudinary, Multer, EmailJS, Nodemailer, Puppeteer, Chart.js, PDF generation, Cron Jobs
 
 ---
 
@@ -163,10 +163,16 @@ npm install
 ### 3. Setup .env file in /BACKEND
 
 ```json
-MONGO_URI=
+MONGODB_URI=
+CLOUDYNARY_NAME=
+CLOUDYNARY_API_KEY=
+CLOUDYNARY_SECRET_KEY=
 EMAIL_USER=
 EMAIL_PASS=
 JWT_SECRET=
+VITE_BACKEND_URL=
+ADMIN_EMAIL=
+ADMIN_PASSWORD=
 ```
 
 ### 4. Install frontend dependencies:
