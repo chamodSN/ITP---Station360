@@ -162,7 +162,7 @@ const AdminCheckAuth = async (req, res) => {
 // Get completed bookings
 export const getCompletedBookings = async (req, res) => {
     try {
-        const bookings = await Booking.find({ 
+        const bookings = await Booking.find({
             $or: [
                 { status: 'done' },
                 { status: 'billed' }
@@ -302,14 +302,14 @@ const billUser = async (req, res) => {
 
         // Send billing email to customer
         const emailResult = await sendBillingEmail(booking, tasks, extraExpenses, calculatedTotal);
-        
+
         if (!emailResult.success) {
             console.error('Failed to send billing email:', emailResult.error);
             // Continue with the response even if email fails
         }
 
-        res.status(200).json({ 
-            success: true, 
+        res.status(200).json({
+            success: true,
             message: 'User billed successfully' + (emailResult.success ? ' and email sent' : ' but email failed to send'),
             booking: savedBooking
         });
@@ -325,23 +325,25 @@ const getEmployeeAttendance = async (req, res) => {
         const { employeeId } = req.query;
         const { month } = req.query;
 
+        console.log('Employee ID, Month:', { employeeId, month });
+
         if (!month) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Month parameter is required" 
+            return res.status(400).json({
+                success: false,
+                message: "Month parameter is required"
             });
         }
 
         if (!employeeId) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Employee ID is required" 
+            return res.status(400).json({
+                success: false,
+                message: "Employee ID is required"
             });
         }
 
         // Parse the month string into a date
         const [year, monthNum] = month.split('-').map(num => parseInt(num, 10));
-        
+
         if (isNaN(year) || isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
             return res.status(400).json({
                 success: false,
@@ -349,35 +351,23 @@ const getEmployeeAttendance = async (req, res) => {
             });
         }
 
-        // Create dates for the first and last day of the month
         const startDate = new Date(year, monthNum - 1, 1);
-        const endDate = new Date(year, monthNum, 0);
-
-        // Format dates as YYYY-MM-DD strings
-        const startDateStr = `${year}-${String(monthNum).padStart(2, '0')}-01`;
-        const endDateStr = `${year}-${String(monthNum).padStart(2, '0')}-${endDate.getDate()}`;
-
-        console.log('Searching attendance for:', {
-            employeeId: employeeId,
-            startDate: startDateStr,
-            endDate: endDateStr
-        });
+        const endDate = new Date(year, monthNum, 0, 23, 59, 59, 999);
 
         const attendanceRecords = await Attendance.find({
-            employeeId: employeeId,
+            employeeId,
             date: {
-                $gte: startDateStr,
-                $lte: endDateStr
+                $gte: startDate,
+                $lte: endDate
             }
         });
 
-        console.log('Found attendance records:', attendanceRecords);
+        console.log('Attendence Records:', { attendanceRecords });
 
         const totalHours = attendanceRecords.reduce((sum, record) => {
-            console.log('Processing record:', record);
             return sum + (record.hours || record.workHours || 0);
         }, 0);
-        
+
         const totalDays = attendanceRecords.length;
 
         console.log('Calculated totals:', { totalHours, totalDays });
@@ -390,9 +380,9 @@ const getEmployeeAttendance = async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching attendance:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: error.message 
+        res.status(500).json({
+            success: false,
+            message: error.message
         });
     }
 };
@@ -486,10 +476,10 @@ const addEmployeeSalary = async (req, res) => {
         // Send salary slip email
         await sendSalaryEmail(employee, salaryRecord);
 
-        res.status(201).json({ 
-            success: true, 
-            message: "Salary record created and added to expenses", 
-            salary: salaryRecord 
+        res.status(201).json({
+            success: true,
+            message: "Salary record created and added to expenses",
+            salary: salaryRecord
         });
     } catch (error) {
         console.error('Error adding salary:', error);
@@ -557,7 +547,7 @@ const generateSalarySlip = async (req, res) => {
         try {
             // Generate PDF
             const pdf = await generateSalarySlipPDF(pdfData);
-            
+
             if (!pdf) {
                 throw new Error('Failed to generate PDF');
             }
@@ -578,18 +568,18 @@ const generateSalarySlip = async (req, res) => {
     }
 };
 
-export { 
-    addExpence, 
-    displayAllExpence, 
-    displaySingleExpence, 
-    deleteSingleExpence, 
-    updateExpence, 
-    loginAdmin, 
-    logoutAdmin, 
-    AdminCheckAuth, 
-    billUser, 
-    getEmployeeAttendance, 
-    updateEmployeeBasicSalary, 
+export {
+    addExpence,
+    displayAllExpence,
+    displaySingleExpence,
+    deleteSingleExpence,
+    updateExpence,
+    loginAdmin,
+    logoutAdmin,
+    AdminCheckAuth,
+    billUser,
+    getEmployeeAttendance,
+    updateEmployeeBasicSalary,
     addEmployeeSalary,
-    generateSalarySlip 
+    generateSalarySlip
 }

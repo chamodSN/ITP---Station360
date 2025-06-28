@@ -27,8 +27,8 @@ const ScheduleNavbar = () => {
             />
             <ul className='hidden md:flex items-start gap-5 font-medium'>
                 <NavLink to='/'><li className='py-1'>Home</li></NavLink>
-                <NavLink to='/services'><li className='py-1'>ALL SERVICES</li></NavLink>
-                <NavLink to='/about'><li className='py-1'>ABOUT</li></NavLink>
+                <NavLink to='/tasks/assign'><li className='py-1'>ASSIGN A TASK</li></NavLink>
+                <NavLink to='/tasks/assigned'><li className='py-1'>ASSIGNED TASKS</li></NavLink>
                 <NavLink to='/contact'><li className='py-1'>CONTACT</li></NavLink>
             </ul>
             <div className='flex items-center gap-4'>

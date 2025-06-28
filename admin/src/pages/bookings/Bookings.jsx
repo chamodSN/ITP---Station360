@@ -26,7 +26,7 @@ const fadeInCard = {
 const Bookings = () => {
     const { services, bookings, loading, getAllBookings } = useContext(AdminContext);
     const { id } = useParams();
-    const [activeTab, setActiveTab] = useState('upcoming'); // 'upcoming' or 'completed'
+    const [activeTab, setActiveTab] = useState('upcoming'); // 'upcoming' | 'completed' | 'late'
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [cancellationReason, setCancellationReason] = useState('');
@@ -46,6 +46,13 @@ const Bookings = () => {
     const completedStatuses = ['billed', 'done'];
     const upcomingBookings = serviceBookings.filter(booking => upcomingStatuses.includes(booking.status));
     const completedBookings = serviceBookings.filter(booking => completedStatuses.includes(booking.status));
+
+    const today = new Date();
+    const lateBookings = serviceBookings.filter(booking => {
+        const bookingDate = new Date(booking.date);
+        return upcomingStatuses.includes(booking.status) && bookingDate < today;
+    });
+
 
     useEffect(() => {
         getAllBookings();
@@ -74,6 +81,28 @@ const Bookings = () => {
             toast.error(error.response?.data?.message || error.message);
         }
     };
+
+    const handleMarkNoShow = async (booking) => {
+        setSelectedBooking(booking);
+        try {
+            const { data } = await axios.put(
+                `http://localhost:4200/api/admin/markAsNoShow/${booking._id}`,
+                {},
+                { withCredentials: true }
+            );
+
+            if (data.success) {
+                toast.success(data.message);
+                getAllBookings();
+                setSelectedBooking(null);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || error.message);
+        }
+    };
+
 
     if (loading) {
         return (
@@ -113,6 +142,16 @@ const Bookings = () => {
                     >
                         Completed Bookings
                     </button>
+                    <button
+                        className={`px-6 py-2 rounded-lg font-semibold transition-colors border-2 ${activeTab === 'late'
+                            ? 'bg-red-600 text-white border-red-600'
+                            : 'bg-white text-red-600 border-red-400 hover:bg-red-50'
+                            }`}
+                        onClick={() => setActiveTab('late')}
+                    >
+                        Late Bookings
+                    </button>
+
                 </div>
 
                 {/* Upcoming Bookings */}
@@ -264,6 +303,83 @@ const Bookings = () => {
                         )}
                     </div>
                 )}
+
+                {/* Late Bookings */}
+                {activeTab === 'late' && (
+                    <div className="mb-12">
+                        <h2 className="text-2xl font-semibold text-red-600 mb-6">Late Bookings</h2>
+                        {lateBookings.length > 0 ? (
+                            <motion.div
+                                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                                variants={fadeInStagger}
+                                initial="hidden"
+                                animate="show"
+                            >
+                                {lateBookings.map((booking) => (
+                                    <motion.div
+                                        key={booking._id}
+                                        variants={fadeInCard}
+                                        className="bg-white border border-red-300 rounded-xl shadow-lg p-6"
+                                        whileHover={{ scale: 1.04, boxShadow: '0 8px 32px 0 rgba(0,0,0,0.12)' }}
+                                        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                                    >
+                                        <div className="flex items-center gap-4 mb-4">
+                                            <div className="p-2 bg-red-100 rounded-lg">
+                                                <Calendar className="w-6 h-6 text-red-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-600">Date</p>
+                                                <p className="font-semibold">{booking.date}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-4 mb-4">
+                                            <div className="p-2 bg-red-100 rounded-lg">
+                                                <Clock className="w-6 h-6 text-red-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-600">Time</p>
+                                                <p className="font-semibold">{booking.timeSlot}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-2 bg-red-100 rounded-lg">
+                                                <Car className="w-6 h-6 text-red-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-600">Vehicle</p>
+                                                {booking.vehicleId ? (
+                                                    <>
+                                                        <p className="font-semibold">
+                                                            {booking.vehicleId.brandName} {booking.vehicleId.modelName}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500">{booking.vehicleId.plateNumber}</p>
+                                                    </>
+                                                ) : (
+                                                    <p className="text-sm text-red-500">Vehicle info not available</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-4 flex justify-end">
+                                            <button
+                                                onClick={() => handleMarkNoShow(booking)}
+                                                className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors"
+                                            >
+                                                <AlertCircle className="w-4 h-4" />
+                                                Mark as No Show
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                ))}
+
+                            </motion.div>
+                        ) : (
+                            <p className="text-gray-500">No late bookings</p>
+                        )}
+                    </div>
+                )}
+
+
             </div>
 
             {/* Cancel Booking Modal */}
@@ -293,11 +409,10 @@ const Bookings = () => {
                             <button
                                 onClick={handleCancelBooking}
                                 disabled={!cancellationReason.trim()}
-                                className={`px-4 py-2 rounded-lg text-white transition-colors ${
-                                    !cancellationReason.trim()
-                                        ? 'bg-red-300 cursor-not-allowed'
-                                        : 'bg-red-500 hover:bg-red-600'
-                                }`}
+                                className={`px-4 py-2 rounded-lg text-white transition-colors ${!cancellationReason.trim()
+                                    ? 'bg-red-300 cursor-not-allowed'
+                                    : 'bg-red-500 hover:bg-red-600'
+                                    }`}
                             >
                                 Confirm Cancellation
                             </button>

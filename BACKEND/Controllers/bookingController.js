@@ -175,6 +175,10 @@ const cancelBooking = async (req, res) => {
             return res.json({ success: false, message: "Cannot cancel booking on the booking date" });
         }
 
+        if (bookingDate.getTime() < today.getTime()) {
+            return res.json({ success: false, message: "Cannot cancel a late booking" });
+        }
+
         // Remove the booking from service's bookedSlots
         const service = await serviceModel.findById(booking.serviceId);
         if (service) {
@@ -195,6 +199,26 @@ const cancelBooking = async (req, res) => {
         return res.json({ success: false, message: err.message });
     }
 };
+
+const markBookingAsNoShow = async (req, res) => {
+    try {
+        const { bookingId } = req.params;
+
+        const booking = await bookingModel.findById(bookingId);
+        if (!booking) {
+            return res.status(404).json({ success: false, message: "Booking not found" });
+        }
+
+        booking.status = "no show";
+        await booking.save();
+
+        return res.status(200).json({ success: true, message: "Booking marked as no show", booking });
+    } catch (error) {
+        console.error("Error marking booking as no show:", error);
+        return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    }
+};
+
 
 const cancelBookingByAdmin = async (req, res) => {
     try {
@@ -241,7 +265,7 @@ const cancelBookingByAdmin = async (req, res) => {
 const getDailyAppointments = async (req, res) => {
     try {
         const { date } = req.query;
-        
+
         if (!date) {
             return res.status(400).json({ message: 'Date is required' });
         }
@@ -251,7 +275,7 @@ const getDailyAppointments = async (req, res) => {
         // Convert date string to start and end of day
         const startDate = new Date(date);
         startDate.setHours(0, 0, 0, 0);
-        
+
         const endDate = new Date(date);
         endDate.setHours(23, 59, 59, 999);
 
@@ -265,10 +289,10 @@ const getDailyAppointments = async (req, res) => {
                 $lte: endDate.toISOString().split('T')[0]
             }
         })
-        .populate('userId', 'name email')
-        .populate('serviceId', 'serviceName')
-        .populate('vehicleId', 'brandName modelName plateNumber')
-        .sort({ timeSlot: 1 });
+            .populate('userId', 'name email')
+            .populate('serviceId', 'serviceName')
+            .populate('vehicleId', 'brandName modelName plateNumber')
+            .sort({ timeSlot: 1 });
 
         console.log("Found appointments:", appointments);
 
@@ -290,7 +314,7 @@ const getDailyAppointments = async (req, res) => {
         // Set response headers for PDF download
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename=daily-appointments-${date}.pdf`);
-        
+
         // Send PDF
         res.end(pdfBuffer);
     } catch (error) {
@@ -308,10 +332,10 @@ export const getVehicleServiceHistory = async (req, res) => {
             vehicleId: vehicleId,
             status: { $in: ['done', 'billed'] }
         })
-        .populate('serviceId', 'serviceName')
-        .populate('technicianId', 'name')
-        .sort({ createdAt: -1 })
-        .select('serviceId technicianId tasksPerformed');
+            .populate('serviceId', 'serviceName')
+            .populate('technicianId', 'name')
+            .sort({ createdAt: -1 })
+            .select('serviceId technicianId tasksPerformed');
 
         if (!serviceHistory) {
             return res.status(404).json({ message: 'No service history found for this vehicle' });
@@ -339,4 +363,4 @@ export const getVehicleServiceHistory = async (req, res) => {
     }
 };
 
-export { bookService, displayTimeslots, displayUserBookings, getAllBookings, cancelBooking, cancelBookingByAdmin,getDailyAppointments }
+export { bookService, displayTimeslots, displayUserBookings, getAllBookings, cancelBooking, cancelBookingByAdmin, getDailyAppointments, markBookingAsNoShow }

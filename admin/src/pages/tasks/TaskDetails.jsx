@@ -3,8 +3,8 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useParams, useNavigate } from 'react-router-dom';
 
-const API_URL = process.env.NODE_ENV === 'development' 
-  ? 'http://localhost:4200' 
+const API_URL = process.env.NODE_ENV === 'development'
+  ? 'http://localhost:4200'
   : '';
 
 const TaskDetails = () => {
@@ -26,7 +26,7 @@ const TaskDetails = () => {
       const response = await axios.get(`${API_URL}/api/admin/shedule/bookings/all`, {
         withCredentials: true
       });
-      
+
       if (response.data.success) {
         const foundTask = response.data.bookings.find(booking => booking._id === taskId);
         if (foundTask) {
@@ -49,10 +49,10 @@ const TaskDetails = () => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/admin/employee/employees`, {
+      const response = await axios.get(`${API_URL}/api/admin/employee/all-employees`, {
         withCredentials: true
       });
-      
+
       if (response.data.success) {
         setEmployees(response.data.employees);
       }
@@ -188,7 +188,7 @@ const TaskDetails = () => {
         {/* Task Details */}
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4">Booking Information</h2>
-          
+
           <div className="space-y-4">
             <div>
               <h3 className="font-medium text-gray-700">Customer</h3>
@@ -196,32 +196,31 @@ const TaskDetails = () => {
               <p className="text-sm text-gray-600">{task.userId ? task.userId.email : 'N/A'}</p>
               <p className="text-sm text-gray-600">{task.userId ? task.userId.phone : 'N/A'}</p>
             </div>
-            
+
             <div>
               <h3 className="font-medium text-gray-700">Service</h3>
               <p>{task.serviceId ? task.serviceId.serviceName : 'N/A'}</p>
               <p className="text-sm text-gray-600">Price: ${task.serviceId ? task.serviceId.price : 'N/A'}</p>
             </div>
-            
+
             <div>
               <h3 className="font-medium text-gray-700">Schedule</h3>
               <p>Date: {formatDate(task.date)}</p>
               <p>Start Time: {formatTime(task.timeSlot)}</p>
               <p>End Time: {formatTime(task.endTime)}</p>
             </div>
-            
+
             <div>
               <h3 className="font-medium text-gray-700">Vehicle</h3>
               <p>Plate Number: {task.vehicleId?.plateNumber}</p>
             </div>
-            
+
             <div>
               <h3 className="font-medium text-gray-700">Status</h3>
-              <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
-                task.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                task.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
-                'bg-blue-100 text-blue-800'
-              }`}>
+              <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${task.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                  task.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-blue-100 text-blue-800'
+                }`}>
                 {task.status || 'Pending'}
               </span>
             </div>
@@ -231,7 +230,7 @@ const TaskDetails = () => {
         {/* Assignment Panel */}
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4">Assignment & Actions</h2>
-          
+
           <div className="space-y-6">
             {/* Current Assignment */}
             <div>
@@ -246,7 +245,7 @@ const TaskDetails = () => {
                 <p className="text-gray-500">No employee assigned yet</p>
               )}
             </div>
-            
+
             {/* Assign Employee */}
             <div>
               <h3 className="font-medium text-gray-700 mb-2">Assign Employee</h3>

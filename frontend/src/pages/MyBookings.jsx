@@ -67,13 +67,17 @@ const MyBookings = () => {
             </div>
 
             <div>
-                {bookings.filter(item => item.status === "Pending").length > 0 ? bookings
-                    .filter(item => item.status === "Pending")
+                {bookings.filter(item => item.status === "Pending" || item.status === "Assigned").length > 0 ? bookings
+                    .filter(item => item.status === "Pending" || item.status === "Assigned")
                     .map((item, index) => (
                         <div
-                            className="grid grid-cols-[1fr_2fr_2fr] gap-4 sm:flex sm:gap-6 py-2 border border-blue-200 rounded-xl mb-4"
                             key={index}
+                            className={`grid grid-cols-[1fr_2fr_2fr] gap-4 sm:flex sm:gap-6 py-2 border rounded-xl mb-4 ${new Date(item.date) < new Date(new Date().setHours(0, 0, 0, 0))
+                                ? 'border-red-400 bg-red-50'
+                                : 'border-blue-200'
+                                }`}
                         >
+
                             <div>
                                 <img
                                     className="w-32 ml-2 bg-indigo-50"
