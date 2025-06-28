@@ -52,9 +52,10 @@ A comprehensive **MERN stack** web application developed as a second-year, secon
 - Admin defines services with duration/specifications.
 - Time slots are auto-generated based on service duration.
 - Users can:
-  - Select service, vehicle, preferred date, and time slot.
+  - Select service, vehicle, preferred date, and time slot, related services.
   - Receive booking confirmation via email.
   - See vehicle service history
+  - Filter service based on category
 - Admin dashboard:
   - Booking categories: Upcoming, Completed, Late.
   - Bookings are locked after a deadline.
